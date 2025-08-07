@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Child {
+  id        String   @id @default(cuid())
+  name      String
+  birthDate DateTime @map("birth_date")
+  records   ChildRecord[]
+
+  @@map("children")
+}
+
+model ChildRecord {
+  id              String   @id @default(cuid())
+  childId         String   @map("child_id")
+  gender          String   // "male" | "female"
+  age             Int      // in months
+  birthWeight     Float    @map("birth_weight")
+  birthLength     Float    @map("birth_length")
+  bodyWeight      Float    @map("body_weight")
+  bodyLength      Float    @map("body_length")
+  breastFeeding   Boolean  @map("breast_feeding")
+  stunting        Boolean
+  imageIsStunting Boolean  @map("image_is_stunting")
+  latitude        Float?
+  longitude       Float?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  child Child @relation(fields: [childId], references: [id])
+
+  @@map("child_records")
+}
