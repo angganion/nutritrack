@@ -152,7 +152,7 @@ export default function DistributionPage() {
                   <p className="text-sm text-gray-600 mb-2">
                     {area.total} children, {area.stunting} stunting cases
                   </p>
-                  <p className="text-sm text-gray-500 mb-2 italic">
+                  <p className="text-sm text-gray-600 mb-2 italic">
                     {area.description}
                   </p>
                   <div className="text-sm text-gray-700">

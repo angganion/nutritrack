@@ -1,78 +1,80 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-white text-gray-900 shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
-Card.displayName = "Card"
+interface CardProps {
+  children: ReactNode;
+  className?: string;
+  variant?: 'default' | 'gradient' | 'glass';
+  hover?: boolean;
+}
 
-const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    {...props}
-  />
-))
-CardHeader.displayName = "CardHeader"
+interface CardHeaderProps {
+  children: ReactNode;
+  className?: string;
+}
 
-const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
-      className
-    )}
-    {...props}
-  />
-))
-CardTitle.displayName = "CardTitle"
+interface CardContentProps {
+  children: ReactNode;
+  className?: string;
+}
 
-const CardDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-gray-600", className)}
-    {...props}
-  />
-))
-CardDescription.displayName = "CardDescription"
+interface CardFooterProps {
+  children: ReactNode;
+  className?: string;
+}
 
-const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
+export function Card({ children, className, variant = 'default', hover = false }: CardProps) {
+  const baseClasses = "relative overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300";
+  const variantClasses = {
+    default: "border-gray-200",
+    gradient: "border-transparent bg-gradient-to-br from-blue-50 to-indigo-50",
+    glass: "border-gray-200/50 bg-white/80 backdrop-blur-sm"
+  };
+  const hoverClasses = hover ? "hover:shadow-lg hover:scale-[1.02] hover:border-gray-300" : "";
 
-const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
-))
-CardFooter.displayName = "CardFooter"
+  return (
+    <div className={cn(baseClasses, variantClasses[variant], hoverClasses, className)}>
+      {children}
+    </div>
+  );
+}
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } 
+export function CardHeader({ children, className }: CardHeaderProps) {
+  return (
+    <div className={cn("flex flex-col space-y-1.5 p-6", className)}>
+      {children}
+    </div>
+  );
+}
+
+export function CardContent({ children, className }: CardContentProps) {
+  return (
+    <div className={cn("p-6 pt-0", className)}>
+      {children}
+    </div>
+  );
+}
+
+export function CardFooter({ children, className }: CardFooterProps) {
+  return (
+    <div className={cn("flex items-center p-6 pt-0", className)}>
+      {children}
+    </div>
+  );
+}
+
+export function CardTitle({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <h3 className={cn("text-lg font-semibold leading-none tracking-tight text-gray-900", className)}>
+      {children}
+    </h3>
+  );
+}
+
+export function CardDescription({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <p className={cn("text-sm text-gray-600", className)}>
+      {children}
+    </p>
+  );
+} 

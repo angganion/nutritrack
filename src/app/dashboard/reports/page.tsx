@@ -30,11 +30,11 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Laporan</h1>
         <div className="flex items-center space-x-4">
-          <button className="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-            <Printer className="mr-2 h-5 w-5 text-gray-400" />
+          <button className="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                          <Printer className="mr-2 h-5 w-5 text-gray-600" />
             Print
           </button>
-          <button className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
+          <button className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
             <Download className="mr-2 h-5 w-5" />
             Export
           </button>
@@ -45,41 +45,28 @@ export default function ReportsPage() {
         {reports.map((report) => (
           <div
             key={report.name}
-            className={`group relative overflow-hidden rounded-xl border border-${report.color}-200 bg-gradient-to-br from-${report.color}-50 to-${report.color}-100 p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl`}
+            className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md"
           >
-            {/* Gradient overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-br from-${report.color}-500 to-${report.color}-600 opacity-0 transition-opacity duration-300 group-hover:opacity-5`} />
-            
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="h-full w-full bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.1)_1px,transparent_0)] bg-[length:20px_20px]" />
-            </div>
-            
-            <div className="relative">
-              <div className="flex items-center">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-300 group-hover:bg-white group-hover:shadow-md`}>
-                  <report.icon className={`h-6 w-6 text-${report.color}-600 transition-all duration-300 group-hover:scale-110`} aria-hidden="true" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-gray-950 transition-colors duration-300">{report.name}</h3>
-                  <p className="mt-1 text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
-                    Last generated: {new Date(report.lastGenerated).toLocaleDateString()}
-                  </p>
-                </div>
+            <div className="flex items-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+                <report.icon className="h-6 w-6 text-gray-600" aria-hidden="true" />
               </div>
-              <p className="mt-3 text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-300">{report.description}</p>
-              <div className="mt-4 flex space-x-3">
-                <button className={`inline-flex items-center text-sm font-medium text-${report.color}-600 hover:text-${report.color}-700 transition-colors duration-300`}>
-                  Preview
-                </button>
-                <button className={`inline-flex items-center text-sm font-medium text-${report.color}-600 hover:text-${report.color}-700 transition-colors duration-300`}>
-                  Download
-                </button>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900">{report.name}</h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  Terakhir dibuat: {new Date(report.lastGenerated).toLocaleDateString('id-ID')}
+                </p>
               </div>
             </div>
-            
-            {/* Subtle accent line */}
-            <div className={`absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-${report.color}-500 to-${report.color}-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
+            <p className="mt-3 text-sm text-gray-600">{report.description}</p>
+            <div className="mt-4 flex space-x-3">
+              <button className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                Preview
+              </button>
+              <button className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                Download
+              </button>
+            </div>
           </div>
         ))}
       </div>

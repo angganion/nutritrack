@@ -114,18 +114,18 @@ export default function DistributionMap({ areas }: DistributionMapProps) {
           div.style.borderRadius = '5px';
           div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
           div.innerHTML = `
-            <h4 style="margin: 0 0 8px 0; font-size: 14px;">Risk Levels</h4>
+            <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #111827; font-weight: bold;">Risk Levels</h4>
             <div style="display: flex; align-items: center; margin: 4px 0;">
               <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #EF4444; margin-right: 8px;"></div>
-              <span style="font-size: 12px;">High Risk (>30%)</span>
+              <span style="font-size: 12px; color: #374151; font-weight: 500;">High Risk (>30%)</span>
             </div>
             <div style="display: flex; align-items: center; margin: 4px 0;">
               <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #F59E0B; margin-right: 8px;"></div>
-              <span style="font-size: 12px;">Medium Risk (10-30%)</span>
+              <span style="font-size: 12px; color: #374151; font-weight: 500;">Medium Risk (10-30%)</span>
             </div>
             <div style="display: flex; align-items: center; margin: 4px 0;">
               <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #10B981; margin-right: 8px;"></div>
-              <span style="font-size: 12px;">Low Risk (<10%)</span>
+              <span style="font-size: 12px; color: #374151; font-weight: 500;">Low Risk (<10%)</span>
             </div>
           `;
           return div;
