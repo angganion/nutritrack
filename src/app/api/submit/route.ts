@@ -48,9 +48,30 @@ export async function POST(request: Request) {
     // Handle alamat creation if provided
     let alamatId = null;
     if (data.latitude && data.longitude) {
-      const reverseGeocodeResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.latitude}&lon=${data.longitude}`);
-      const reverseGeocodeData = await reverseGeocodeResponse.json();
-      console.log('Reverse geocode data:', reverseGeocodeData);
+      try {
+        const reverseGeocodeResponse = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.latitude}&lon=${data.longitude}`,
+          {
+            headers: {
+              'User-Agent': 'NutriTrack-App/1.0 (stunting-monitoring)',
+              'Accept': 'application/json'
+            }
+          }
+        );
+        
+        if (!reverseGeocodeResponse.ok) {
+          console.error('Reverse geocoding HTTP error:', reverseGeocodeResponse.status);
+          throw new Error(`HTTP error! status: ${reverseGeocodeResponse.status}`);
+        }
+        
+        const contentType = reverseGeocodeResponse.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error('Invalid content type from Nominatim:', contentType);
+          throw new Error('Invalid response type from geocoding service');
+        }
+        
+        const reverseGeocodeData = await reverseGeocodeResponse.json();
+        console.log('Reverse geocode data:', reverseGeocodeData);
 
       // Fungsi untuk mendapatkan nama provinsi dari berbagai kemungkinan label data
       const getState = (address: any) => {
@@ -117,32 +138,37 @@ export async function POST(request: Request) {
         return 'Unknown';
       };
 
-      // Check if reverse geocoding was successful
-      if (!reverseGeocodeData.address || reverseGeocodeData.error) {
-        console.error('Reverse geocoding failed:', reverseGeocodeData.error || 'No address data');
-        // Skip alamat creation if reverse geocoding fails
-        alamatId = null;
-      } else {
-        const province = getState(reverseGeocodeData.address);
+        // Check if reverse geocoding was successful
+        if (!reverseGeocodeData.address || reverseGeocodeData.error) {
+          console.error('Reverse geocoding failed:', reverseGeocodeData.error || 'No address data');
+          // Skip alamat creation if reverse geocoding fails
+          alamatId = null;
+        } else {
+          const province = getState(reverseGeocodeData.address);
 
-        const { data: alamat, error: alamatError } = await supabase
-          .from('alamat')
-          .insert([{
-            latitude: data.latitude,
-            longitude: data.longitude,
-            state: province,
-            city: reverseGeocodeData.address?.city || reverseGeocodeData.address?.town || reverseGeocodeData.address?.municipality || 'Unknown',
-            city_district: reverseGeocodeData.address?.city_district || reverseGeocodeData.address?.suburb || 'Unknown',
-            village: reverseGeocodeData.address?.village || reverseGeocodeData.address?.hamlet || reverseGeocodeData.address?.neighbourhood || 'Unknown',
-          }])
-          .select()
-          .single();
+          const { data: alamat, error: alamatError } = await supabase
+            .from('alamat')
+            .insert([{
+              latitude: data.latitude,
+              longitude: data.longitude,
+              state: province,
+              city: reverseGeocodeData.address?.city || reverseGeocodeData.address?.town || reverseGeocodeData.address?.municipality || 'Unknown',
+              city_district: reverseGeocodeData.address?.city_district || reverseGeocodeData.address?.suburb || 'Unknown',
+              village: reverseGeocodeData.address?.village || reverseGeocodeData.address?.hamlet || reverseGeocodeData.address?.neighbourhood || 'Unknown',
+            }])
+            .select()
+            .single();
 
-        if (alamatError) {
-          console.error('Error creating alamat:', alamatError);
-          throw alamatError;
+          if (alamatError) {
+            console.error('Error creating alamat:', alamatError);
+            throw alamatError;
+          }
+          alamatId = alamat.id;
         }
-        alamatId = alamat.id;
+      } catch (geocodeError) {
+        console.error('Geocoding error:', geocodeError);
+        // Continue without alamat if geocoding fails
+        alamatId = null;
       }
     }
 
