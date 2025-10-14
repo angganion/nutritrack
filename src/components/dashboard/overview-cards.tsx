@@ -1,75 +1,70 @@
 import { Users, AlertTriangle, CheckCircle, Activity, TrendingUp, TrendingDown } from 'lucide-react';
 
-async function getDashboardStats() {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/stats?period=30`, {
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch dashboard stats');
-    
-    const data = await response.json();
-    
-    return [
-      {
-        name: 'Total Anak',
-        value: data.overview.totalChildren.value.toString(),
-        icon: Users,
-        change: `${data.overview.totalChildren.change}%`,
-        changeType: data.overview.totalChildren.change.startsWith('-') ? 'negative' : 'positive',
-        iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600',
-        iconColor: 'text-white',
-        borderColor: 'border-blue-100',
-        bgGradient: 'from-blue-50/50 to-blue-100/50',
-        description: 'yang dipantau',
-      },
-      {
-        name: 'Normal',
-        value: data.overview.nonStuntingCases.value.toString(),
-        icon: CheckCircle,
-        change: `${data.overview.nonStuntingCases.change}%`,
-        changeType: data.overview.nonStuntingCases.change.startsWith('-') ? 'negative' : 'positive',
-        iconBg: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
-        iconColor: 'text-white',
-        borderColor: 'border-emerald-100',
-        bgGradient: 'from-emerald-50/50 to-emerald-100/50',
-        description: 'pertumbuhan normal',
-      },
-      {
-        name: 'Stunting',
-        value: data.overview.stuntingCases.value.toString(),
-        icon: AlertTriangle,
-        change: `${data.overview.stuntingCases.change}%`,
-        changeType: data.overview.stuntingCases.change.startsWith('-') ? 'positive' : 'negative',
-        iconBg: 'bg-gradient-to-br from-rose-500 to-rose-600',
-        iconColor: 'text-white',
-        borderColor: 'border-rose-100',
-        bgGradient: 'from-rose-50/50 to-rose-100/50',
-        description: 'perlu perhatian',
-      },
-      {
-        name: 'Hari Ini',
-        value: data.overview.todayData.value.toString(),
-        icon: Activity,
-        change: `${data.overview.todayData.change}%`,
-        changeType: data.overview.todayData.change.startsWith('-') ? 'negative' : 'positive',
-        iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600',
-        iconColor: 'text-white',
-        borderColor: 'border-purple-100',
-        bgGradient: 'from-purple-50/50 to-purple-100/50',
-        description: 'data masuk',
-      },
-    ];
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    // Fallback to empty stats
-    return [];
-  }
+interface OverviewCardsProps {
+  data?: any;
 }
 
-const stats = await getDashboardStats();
+export function OverviewCards({ data }: OverviewCardsProps) {
+  if (!data || !data.overview) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    );
+  }
 
-export function OverviewCards() {
+  const stats = [
+    {
+      name: 'Total Anak',
+      value: data.overview.totalChildren.value.toString(),
+      icon: Users,
+      change: `${data.overview.totalChildren.change}%`,
+      changeType: data.overview.totalChildren.change.startsWith('-') ? 'negative' : 'positive',
+      iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600',
+      iconColor: 'text-white',
+      borderColor: 'border-blue-100',
+      bgGradient: 'from-blue-50/50 to-blue-100/50',
+      description: 'yang dipantau',
+    },
+    {
+      name: 'Normal',
+      value: data.overview.nonStuntingCases.value.toString(),
+      icon: CheckCircle,
+      change: `${data.overview.nonStuntingCases.change}%`,
+      changeType: data.overview.nonStuntingCases.change.startsWith('-') ? 'negative' : 'positive',
+      iconBg: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+      iconColor: 'text-white',
+      borderColor: 'border-emerald-100',
+      bgGradient: 'from-emerald-50/50 to-emerald-100/50',
+      description: 'pertumbuhan normal',
+    },
+    {
+      name: 'Stunting',
+      value: data.overview.stuntingCases.value.toString(),
+      icon: AlertTriangle,
+      change: `${data.overview.stuntingCases.change}%`,
+      changeType: data.overview.stuntingCases.change.startsWith('-') ? 'positive' : 'negative',
+      iconBg: 'bg-gradient-to-br from-rose-500 to-rose-600',
+      iconColor: 'text-white',
+      borderColor: 'border-rose-100',
+      bgGradient: 'from-rose-50/50 to-rose-100/50',
+      description: 'perlu perhatian',
+    },
+    {
+      name: 'Hari Ini',
+      value: data.overview.todayData.value.toString(),
+      icon: Activity,
+      change: `${data.overview.todayData.change}%`,
+      changeType: data.overview.todayData.change.startsWith('-') ? 'negative' : 'positive',
+      iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600',
+      iconColor: 'text-white',
+      borderColor: 'border-purple-100',
+      bgGradient: 'from-purple-50/50 to-purple-100/50',
+      description: 'data masuk',
+    },
+  ];
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (

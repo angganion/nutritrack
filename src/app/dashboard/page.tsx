@@ -99,7 +99,7 @@ export default async function DashboardPage({
             Periode: {dashboardData?.analysis?.period || '30 hari'}
           </div>
         </div>
-        <OverviewCards />
+         <OverviewCards data={dashboardData} />
       </div>
       
       {/* Charts Section */}
