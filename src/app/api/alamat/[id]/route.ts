@@ -4,13 +4,14 @@ import { supabase } from '@/lib/supabase';
 // GET - Ambil alamat berdasarkan ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { data, error } = await supabase
       .from('alamat')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) {
@@ -36,9 +37,10 @@ export async function GET(
 // PUT - Update alamat berdasarkan ID
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const data = await request.json();
 
     // Validate latitude and longitude if provided
@@ -63,7 +65,7 @@ export async function PUT(
     const { data: result, error } = await supabase
       .from('alamat')
       .update(data)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -90,14 +92,16 @@ export async function PUT(
 // DELETE - Hapus alamat berdasarkan ID
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Check if alamat is being used by any children_data
     const { data: children, error: checkError } = await supabase
       .from('children_data')
       .select('id')
-      .eq('alamat_id', params.id)
+      .eq('alamat_id', id)
       .limit(1);
 
     if (checkError) {
@@ -114,7 +118,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('alamat')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) {
       if (error.code === 'PGRST116') {
