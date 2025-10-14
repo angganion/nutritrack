@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-
+import { randomUUID } from 'crypto';
 import { supabase } from '@/lib/supabase';
 
 // Helper function untuk validasi NIK (harus 16 digit angka)
@@ -49,16 +49,22 @@ export async function POST(request: Request) {
     let alamatId = null;
     if (data.latitude && data.longitude) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 detik timeout
+
         const reverseGeocodeResponse = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.latitude}&lon=${data.longitude}`,
           {
             headers: {
-              'User-Agent': 'NutriTrack-App/1.0 (stunting-monitoring)',
-              'Accept': 'application/json'
-            }
+              'User-Agent': 'Aplikasi Pemantauan Stunting v1.0 - admin@namadomain.com',
+              'Accept': 'application/json',
+            },
+            signal: controller.signal, // Tambahkan abort signal
           }
         );
-        
+
+        clearTimeout(timeoutId);
+               
         if (!reverseGeocodeResponse.ok) {
           console.error('Reverse geocoding HTTP error:', reverseGeocodeResponse.status);
           throw new Error(`HTTP error! status: ${reverseGeocodeResponse.status}`);
@@ -149,6 +155,7 @@ export async function POST(request: Request) {
           const { data: alamat, error: alamatError } = await supabase
             .from('alamat')
             .insert([{
+              id: randomUUID(),
               latitude: data.latitude,
               longitude: data.longitude,
               state: province,
@@ -176,6 +183,7 @@ export async function POST(request: Request) {
     const { data: result, error } = await supabase
       .from('children_data')
       .insert([{
+        id: randomUUID(),
         nik: nik,  // NIK anak (optional, bisa duplicate)
         gender: data.gender,
         age: data.age,
