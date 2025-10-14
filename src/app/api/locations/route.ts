@@ -24,9 +24,9 @@ export async function GET(request: Request) {
 
       // Ambil unique provinces
       const uniqueProvinces = [...new Set(
-        provinces
-          .filter(item => item.alamat?.state)
-          .map(item => item.alamat.state)
+        (provinces as any[] || [])
+          .filter((item: any) => item.alamat?.state)
+          .map((item: any) => item.alamat.state)
       )].sort();
 
       if (level === 'provinces') {
@@ -66,9 +66,9 @@ export async function GET(request: Request) {
 
       // Group cities by province
       const citiesByProvince: { [key: string]: string[] } = {};
-      cities
-        .filter(item => item.alamat?.state && item.alamat?.city)
-        .forEach(item => {
+      (cities as any[] || [])
+        .filter((item: any) => item.alamat?.state && item.alamat?.city)
+        .forEach((item: any) => {
           const province = item.alamat.state;
           const city = item.alamat.city;
           if (!citiesByProvince[province]) {
@@ -105,9 +105,9 @@ export async function GET(request: Request) {
 
       // Group districts by province and city
       const districtsByLocation: { [key: string]: { [key: string]: string[] } } = {};
-      districts
-        .filter(item => item.alamat?.state && item.alamat?.city && item.alamat?.city_district)
-        .forEach(item => {
+      (districts as any[] || [])
+        .filter((item: any) => item.alamat?.state && item.alamat?.city && item.alamat?.city_district)
+        .forEach((item: any) => {
           const province = item.alamat.state;
           const city = item.alamat.city;
           const district = item.alamat.city_district;
