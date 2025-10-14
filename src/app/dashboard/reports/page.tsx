@@ -6,7 +6,8 @@ import { useState, useEffect } from 'react';
 
 async function getReportsData() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/stats?period=30`, {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const response = await fetch(`${baseUrl}/api/dashboard/stats?period=30`, {
       cache: 'no-store'
     });
     

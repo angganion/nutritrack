@@ -1,12 +1,14 @@
 import { cn } from "@/lib/utils";
+import { CSSProperties } from 'react';
 
 interface SkeletonProps {
   className?: string;
   variant?: 'default' | 'text' | 'circular' | 'rectangular';
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  style?: CSSProperties;
 }
 
-export function Skeleton({ className, variant = 'default', size = 'md' }: SkeletonProps) {
+export function Skeleton({ className, variant = 'default', size = 'md', style }: SkeletonProps) {
   const baseClasses = "animate-pulse rounded-md bg-gray-200";
   
   const variantClasses = {
@@ -30,7 +32,8 @@ export function Skeleton({ className, variant = 'default', size = 'md' }: Skelet
         variantClasses[variant], 
         sizeClasses[size], 
         className
-      )} 
+      )}
+      style={style}
     />
   );
 }

@@ -1,8 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-console.log(process.env.DATABASE_URL);
-console.log(process.env.API_KEY);
-
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
   throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
 }

@@ -13,6 +13,7 @@ interface MapProps {
 export default function Map({ center, markers }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const leafletRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
 
   useEffect(() => {
@@ -24,6 +25,8 @@ export default function Map({ center, markers }: MapProps) {
       if (isInitializedRef.current || !mapRef.current) return;
 
       const L = await import('leaflet');
+      leafletRef.current = L;
+      // @ts-ignore - CSS import
       await import('leaflet/dist/leaflet.css');
 
       // Check if component is still mounted and not already initialized
@@ -80,7 +83,9 @@ export default function Map({ center, markers }: MapProps) {
 
   // Handle updates to center and markers
   useEffect(() => {
-    if (!mapInstanceRef.current || !isInitializedRef.current) return;
+    if (!mapInstanceRef.current || !isInitializedRef.current || !leafletRef.current) return;
+
+    const L = leafletRef.current;
 
     // Update center
     mapInstanceRef.current.setView(center, 13);

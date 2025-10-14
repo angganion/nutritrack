@@ -12,7 +12,8 @@ async function getDashboardStats(province?: string, city?: string) {
     if (province) params.append('province', province);
     if (city) params.append('city', city);
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/stats?${params.toString()}`, {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const response = await fetch(`${baseUrl}/api/dashboard/stats?${params.toString()}`, {
       cache: 'no-store'
     });
     
