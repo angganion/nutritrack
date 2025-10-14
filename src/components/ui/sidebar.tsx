@@ -12,76 +12,65 @@ const navigation = [
 
 export function Sidebar() {
   return (
-    <div className="hidden w-72 flex-shrink-0 bg-white shadow-xl border-r border-gray-200 md:flex">
+    <div className="hidden w-64 flex-shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 md:flex">
       <div className="flex w-full flex-col">
         {/* Logo Section */}
-        <div className="flex h-20 items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-700 border-b border-blue-600">
-          <div className="flex items-center space-x-3">
-            <img src="/garuda.png" alt="Logo Garuda" className="h-8 w-auto" />
-            <div className="text-white">
-              <div className="text-lg font-bold">PANTAU+</div>
-              <div className="text-xs text-blue-200">Sistem Pemantauan</div>
+        <div className="flex h-16 items-center px-5 border-b border-slate-100 bg-white/50 backdrop-blur-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <img src="/garuda.png" alt="Logo" className="h-5 w-auto brightness-0 invert" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900 tracking-tight">PANTAU+</div>
+              <div className="text-[10px] text-slate-500 font-medium">Sistem Pemantauan</div>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-2 px-4 py-6">
+        <nav className="flex-1 px-3 py-6 space-y-1">
           {navigation.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="group relative flex items-center rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
+              className="group relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:text-blue-700 hover:bg-blue-50/50 transition-all duration-200"
             >
-              {/* Active indicator */}
-              <div className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-blue-600 opacity-0 transition-all duration-200 group-hover:opacity-100" />
-              
-              <item.icon
-                className="mr-3 h-5 w-5 flex-shrink-0 text-gray-500 transition-colors duration-200 group-hover:text-gray-700"
-                aria-hidden="true"
-              />
-              <div className="flex-1">
-                <div className="font-medium">{item.name}</div>
-                <div className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-200">
-                  {item.description}
-                </div>
-              </div>
+              <item.icon className="h-[18px] w-[18px] text-slate-400 group-hover:text-blue-600 transition-colors" />
+              <span>{item.name}</span>
             </Link>
           ))}
         </nav>
 
         {/* Quick Stats */}
-        <div className="border-t border-gray-300 p-4">
-          <div className="rounded-lg bg-gray-50 p-4 border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <Activity className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">Status Sistem</span>
+        <div className="px-3 pb-3">
+          <div className="rounded-xl bg-gradient-to-br from-slate-50 to-slate-100/50 p-3.5 border border-slate-200/60">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-xs font-semibold text-slate-700">Online</span>
               </div>
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+              <Activity className="h-3.5 w-3.5 text-slate-400" />
             </div>
-            <div className="text-xs text-green-700">
-              Semua sistem berjalan normal
-            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Sistem berjalan normal
+            </p>
           </div>
         </div>
 
         {/* User Profile */}
-        <div className="border-t border-gray-300 p-4">
-          <div className="flex items-center space-x-3">
+        <div className="border-t border-gray-100 p-3">
+          <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
             <div className="relative">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg">
-                <span className="text-sm font-bold text-white">A</span>
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center ring-2 ring-slate-100">
+                <span className="text-xs font-semibold text-white">AD</span>
               </div>
-              <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white"></div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">Admin User</p>
-              <p className="text-xs text-gray-600 truncate">admin@pantau.id</p>
+              <p className="text-sm font-semibold text-slate-900 truncate">Admin User</p>
+              <p className="text-xs text-slate-500 truncate">Administrator</p>
             </div>
-            <button className="rounded-lg p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-              <Settings className="h-4 w-4" />
-            </button>
+            <Settings className="h-4 w-4 text-slate-400" />
           </div>
         </div>
       </div>

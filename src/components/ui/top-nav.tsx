@@ -2,66 +2,64 @@ import { Bell, Menu, User, Search, Settings, LogOut, ChevronDown } from 'lucide-
 
 export function TopNav() {
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm">
+    <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-40">
       <div className="flex h-16 items-center justify-between px-6">
         {/* Mobile menu button */}
         <button
           type="button"
-          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 md:hidden transition-colors"
+          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden transition-colors"
         >
-          <span className="sr-only">Open sidebar</span>
-          <Menu className="h-6 w-6" aria-hidden="true" />
+          <Menu className="h-5 w-5" />
         </button>
 
         {/* Search */}
         <div className="flex flex-1 justify-between px-4">
-          <div className="flex flex-1 max-w-lg">
+          <div className="flex flex-1 max-w-xl">
             <div className="relative w-full">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-5 w-5 text-gray-600" aria-hidden="true" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <Search className="h-4 w-4 text-slate-400" />
               </div>
               <input
                 type="text"
                 name="search"
                 id="search"
-                className="block w-full rounded-xl border-0 bg-gray-50 py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-600 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
-                placeholder="Cari data anak, laporan, atau statistik..."
+                className="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:bg-white transition-all"
+                placeholder="Cari data anak, statistik, laporan..."
               />
             </div>
           </div>
           
-          <div className="ml-4 flex items-center space-x-4">
+          <div className="ml-4 flex items-center gap-2">
             {/* Notifications */}
             <button
               type="button"
-              className="relative rounded-lg p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 transition-colors"
             >
-              <span className="sr-only">View notifications</span>
-              <Bell className="h-6 w-6" aria-hidden="true" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 border-2 border-white"></span>
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 border-2 border-white"></span>
             </button>
 
             {/* Quick Actions */}
-            <div className="hidden md:flex items-center space-x-2">
-              <button className="inline-flex items-center rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 hover:scale-105">
-                + Tambah Data
+            <div className="hidden md:flex items-center">
+              <button className="px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+                Tambah Data
               </button>
             </div>
 
             {/* Profile dropdown */}
-            <div className="relative">
+            <div className="relative ml-1">
               <button
                 type="button"
-                className="flex items-center space-x-2 rounded-lg bg-gray-50 p-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                className="flex items-center gap-2.5 rounded-lg bg-slate-50 px-2.5 py-2 hover:bg-slate-100 transition-colors"
               >
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
-                  <span className="text-sm font-bold text-white">A</span>
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-white">AD</span>
                 </div>
                 <div className="hidden md:block text-left">
-                  <div className="text-sm font-medium text-gray-900">Admin User</div>
-                  <div className="text-xs text-gray-600">Administrator</div>
+                  <div className="text-xs font-semibold text-slate-900">Admin</div>
+                  <div className="text-[10px] text-slate-500">Administrator</div>
                 </div>
-                <ChevronDown className="h-4 w-4 text-gray-600" />
+                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
               </button>
               
               {/* Dropdown menu - would be implemented with state management */}

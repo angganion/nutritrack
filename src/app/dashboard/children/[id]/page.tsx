@@ -1,175 +1,190 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { MapPin } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import { ArrowLeft, TrendingUp, Activity, Calendar, Sparkles, User, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-
-import { getChildById } from '@/services/child.service';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// Import map component dynamically to avoid SSR issues
-const Map = dynamic(() => import('@/components/map'), { 
-  ssr: false,
-  loading: () => <div className="w-full h-[400px] bg-gray-100 rounded-lg animate-pulse" />
-});
 
 export default function ChildDetailPage() {
   const { id } = useParams();
-  const { data: child, isLoading } = useQuery({
-    queryKey: ['child', id],
-    queryFn: () => getChildById(id as string),
+  const router = useRouter();
+
+  // Fetch history by NIK
+  const { data: historyData, isLoading } = useQuery({
+    queryKey: ['child-history', id],
+    queryFn: async () => {
+      const response = await fetch(`/api/children/history/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch child history');
+      return response.json();
+    },
   });
 
   if (isLoading) {
-    return <div className="space-y-4">
-      <Skeleton className="h-8 w-48" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Skeleton className="h-[200px]" />
-        <Skeleton className="h-[200px]" />
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-slate-200 rounded animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="h-64 bg-slate-200 rounded-xl animate-pulse" />
+          <div className="lg:col-span-2 h-64 bg-slate-200 rounded-xl animate-pulse" />
+        </div>
       </div>
-    </div>;
+    );
   }
 
-  if (!child) {
-    return <div>Child not found</div>;
+  if (!historyData) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-600">Data tidak ditemukan</p>
+      </div>
+    );
   }
 
-  const recommendations = getRecommendations(child);
+  const latestRecord = historyData.latestRecord;
+  const history = historyData.history;
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <Link href="/dashboard/children" className="text-blue-600 hover:underline font-medium">
-          ← Back to Children
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <Link 
+          href="/dashboard/children"
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Kembali ke Daftar Anak
         </Link>
-        <p className="text-gray-600 font-medium">ID: {child.id}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6 bg-white shadow-lg border border-gray-200">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">Measurements</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-700 font-medium">Age:</span>
-              <span className="text-gray-900 font-semibold">{child.age} months</span>
+      {/* NIK & Status Info */}
+      <div className="rounded-xl border border-slate-200/60 bg-white p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <User className="h-7 w-7 text-white" />
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700 font-medium">Weight:</span>
-              <span className="text-gray-900 font-semibold">{child.body_weight} kg</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700 font-medium">Height:</span>
-              <span className="text-gray-900 font-semibold">{child.body_length} cm</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700 font-medium">Stunting Status:</span>
-              <span className={`font-semibold ${child.stunting ? 'text-red-600' : 'text-green-600'}`}>
-                {child.stunting ? 'Yes' : 'No'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700 font-medium">Breastfeeding:</span>
-              <span className={`font-semibold ${child.breast_feeding ? 'text-green-600' : 'text-red-600'}`}>
-                {child.breast_feeding ? 'Yes' : 'No'}
-              </span>
+            <div>
+              <p className="text-sm text-slate-500">{historyData.nik ? 'NIK Anak' : 'ID Anak'}</p>
+              <h1 className="text-2xl font-bold text-slate-900">
+                {historyData.nik || latestRecord.id}
+              </h1>
+              <p className="text-sm text-slate-600 mt-1">{history.length} pemeriksaan tercatat</p>
             </div>
           </div>
-        </Card>
-
-        <Card className="p-6 bg-white shadow-lg border border-gray-200">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">Recommendations</h2>
-          <ul className="space-y-3">
-            {recommendations.map((rec, index) => (
-              <li key={index} className="text-gray-800 leading-relaxed flex items-start">
-                <span className="text-blue-600 mr-2 mt-1">•</span>
-                {rec}
-              </li>
-            ))}
-          </ul>
-        </Card>
+          <Link
+            href={`/dashboard/child-recommendations/${latestRecord.id}`}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-500/30 transition-all duration-200"
+          >
+            <Sparkles className="h-4 w-4" />
+            Dapatkan Rekomendasi AI
+          </Link>
+        </div>
       </div>
 
-      {child.latitude && child.longitude && (
-        <Card className="p-6 bg-white shadow-lg border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="w-5 h-5 text-blue-600" />
-            <h2 className="text-xl font-bold text-gray-900">Location</h2>
+      {/* Latest Record */}
+      <div className="rounded-xl border border-slate-200/60 bg-white p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Activity className="h-5 w-5 text-indigo-600" />
+          <h2 className="text-lg font-semibold text-slate-900">Data Terbaru</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <p className="text-xs text-slate-500 mb-1">Usia</p>
+            <p className="text-lg font-semibold text-slate-900">{latestRecord.age} bulan</p>
           </div>
-          <Map 
-            center={[child.latitude, child.longitude]} 
-            markers={[{ 
-              position: [child.latitude, child.longitude],
-              popup: `Child's Location`
-            }]} 
-          />
-        </Card>
-      )}
-
-      <Card className="p-6 bg-white shadow-lg border border-gray-200">
-        <h2 className="text-xl font-bold mb-4 text-gray-900">Record Information</h2>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Record Date:</span>
-            <span className="text-gray-900 font-semibold">
-              {new Date(child.created_at).toLocaleDateString('id-ID', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </span>
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <p className="text-xs text-slate-500 mb-1">Berat Badan</p>
+            <p className="text-lg font-semibold text-slate-900">{latestRecord.body_weight} kg</p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Gender:</span>
-            <span className="text-gray-900 font-semibold">
-              {child.gender === 'male' ? 'Laki-laki' : 'Perempuan'}
-            </span>
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <p className="text-xs text-slate-500 mb-1">Tinggi Badan</p>
+            <p className="text-lg font-semibold text-slate-900">{latestRecord.body_length} cm</p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Birth Weight:</span>
-            <span className="text-gray-900 font-semibold">{child.birth_weight} kg</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Birth Length:</span>
-            <span className="text-gray-900 font-semibold">{child.birth_length} cm</span>
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <p className="text-xs text-slate-500 mb-1">Status</p>
+            <p className={`text-lg font-semibold ${latestRecord.stunting ? 'text-rose-600' : 'text-emerald-600'}`}>
+              {latestRecord.stunting ? 'Stunting' : 'Normal'}
+            </p>
           </div>
         </div>
-      </Card>
+      </div>
+
+      {/* History Timeline */}
+      <div className="rounded-xl border border-slate-200/60 bg-white p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <TrendingUp className="h-5 w-5 text-indigo-600" />
+          <h2 className="text-lg font-semibold text-slate-900">Riwayat Pemeriksaan</h2>
+        </div>
+        
+        <div className="space-y-4">
+          {history.map((record: any, index: number) => (
+            <div 
+              key={record.id}
+              className="relative pl-8 pb-4 last:pb-0"
+            >
+              {/* Timeline line */}
+              {index !== history.length - 1 && (
+                <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-slate-200" />
+              )}
+              
+              {/* Timeline dot */}
+              <div className={`absolute left-0 top-1.5 h-5 w-5 rounded-full border-2 ${
+                index === 0 
+                  ? 'bg-indigo-500 border-indigo-500' 
+                  : 'bg-white border-slate-300'
+              }`} />
+              
+              {/* Content */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 hover:bg-slate-50 transition-colors">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-slate-400" />
+                    <p className="text-sm font-medium text-slate-900">
+                      {new Date(record.created_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </p>
+                    {index === 0 && (
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-700">
+                        Terbaru
+                      </span>
+                    )}
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                    record.stunting 
+                      ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  }`}>
+                    {record.stunting ? 'Stunting' : 'Normal'}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="text-slate-500 text-xs">Usia</p>
+                    <p className="font-semibold text-slate-900">{record.age} bulan</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Berat</p>
+                    <p className="font-semibold text-slate-900">{record.body_weight} kg</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Tinggi</p>
+                    <p className="font-semibold text-slate-900">{record.body_length} cm</p>
+                  </div>
+                </div>
+
+                {record.breast_feeding && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <p className="text-xs text-emerald-600 font-medium">✓ ASI Eksklusif</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
-}
-
-function getRecommendations(record: any) {
-  const recommendations = [];
-
-  // Basic recommendations based on stunting status
-  if (record.stunting) {
-    recommendations.push(
-      "Konsultasikan dengan dokter atau ahli gizi untuk penanganan stunting",
-      "Pastikan asupan protein yang cukup (daging, ikan, telur, kacang-kacangan)",
-      "Berikan makanan yang kaya zat besi dan zinc",
-      "Terapkan pola makan gizi seimbang"
-    );
-  }
-
-  // Recommendations based on breastfeeding status
-  if (!record.breast_feeding && record.age <= 24) {
-    recommendations.push(
-      "Pertimbangkan untuk memberikan ASI eksklusif sampai usia 6 bulan",
-      "Konsultasikan dengan konselor laktasi untuk bantuan menyusui"
-    );
-  }
-
-  // General recommendations for all children
-  recommendations.push(
-    "Lakukan pemeriksaan pertumbuhan secara rutin",
-    "Pastikan imunisasi lengkap sesuai usia",
-    "Terapkan pola hidup bersih dan sehat"
-  );
-
-  return recommendations;
 }

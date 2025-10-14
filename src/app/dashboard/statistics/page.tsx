@@ -1,58 +1,152 @@
-import { StuntingChart } from '@/components/dashboard/stunting-chart';
+import { StuntingPrevalenceChart } from '@/components/dashboard/stunting-prevalence-chart';
+import { AgeDistributionChart } from '@/components/dashboard/age-distribution-chart';
 import { DistributionChart } from '@/components/dashboard/distribution-chart';
+import { TrendingUp, TrendingDown, MapPin, AlertTriangle } from 'lucide-react';
 
-export default function StatisticsPage() {
+async function getStatisticsData() {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/stats?period=30`, {
+      cache: 'no-store'
+    });
+    
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    console.error('Error:', error);
+    return null;
+  }
+}
+
+export default async function StatisticsPage() {
+  const statsData = await getStatisticsData();
+  
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Statistik Stunting</h1>
-        <div className="flex items-center space-x-4">
-          <select className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors">
-            <option>7 Hari Terakhir</option>
-            <option>30 Hari Terakhir</option>
-            <option>3 Bulan Terakhir</option>
-            <option>1 Tahun Terakhir</option>
-          </select>
+      <div className="border-b border-gray-200 pb-4">
+        <h1 className="text-2xl font-semibold text-gray-900">Statistik</h1>
+        <p className="text-sm text-gray-500 mt-1">Analisis data pemantauan stunting</p>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs text-gray-500">Tingkat Stunting</h3>
+            <AlertTriangle className={`h-4 w-4 ${parseFloat(statsData?.analysis?.stuntingRate || '0') > 20 ? 'text-red-600' : 'text-gray-400'}`} />
+          </div>
+          <p className={`text-2xl font-semibold ${parseFloat(statsData?.analysis?.stuntingRate || '0') > 20 ? 'text-red-600' : 'text-gray-900'}`}>
+            {statsData?.analysis?.stuntingRate || '0'}%
+          </p>
+          <p className="text-xs text-gray-400 mt-1">dari total yang dipantau</p>
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs text-gray-500">ASI Eksklusif</h3>
+            <TrendingUp className="h-4 w-4 text-gray-400" />
+          </div>
+          <p className="text-2xl font-semibold text-gray-900">
+            {statsData?.analysis?.breastFeedingRate || '0'}%
+          </p>
+          <p className="text-xs text-gray-400 mt-1">anak mendapat ASI</p>
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs text-gray-500">Area Prioritas</h3>
+            <MapPin className="h-4 w-4 text-gray-400" />
+          </div>
+          <p className="text-2xl font-semibold text-gray-900">
+            {statsData?.highRiskAreas?.length || 0}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">wilayah prioritas</p>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">Tren Pertumbuhan</h2>
-          <StuntingChart />
+      {/* Charts */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-3 text-sm font-medium text-gray-900">Tren Prevalensi Stunting</h2>
+          <p className="text-xs text-gray-500 mb-4">6 bulan terakhir (target WHO 20%)</p>
+          <StuntingPrevalenceChart />
         </div>
         
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">Distribusi Status</h2>
-          <DistributionChart />
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-3 text-sm font-medium text-gray-900">Distribusi per Kelompok Usia</h2>
+          <p className="text-xs text-gray-500 mb-4">Perbandingan per usia</p>
+          <AgeDistributionChart />
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold text-gray-900">Analisis Faktor Risiko</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { label: 'Gizi Buruk', value: '15%', change: '+2.3%', status: 'negative', color: 'red' },
-            { label: 'ASI Eksklusif', value: '78%', change: '+5.1%', status: 'positive', color: 'green' },
-            { label: 'Imunisasi Lengkap', value: '92%', change: '+1.2%', status: 'positive', color: 'blue' },
-            { label: 'Sanitasi Buruk', value: '8%', change: '-3.4%', status: 'positive', color: 'orange' },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:shadow-sm">
-              <h3 className="text-sm font-medium text-gray-700">{stat.label}</h3>
-              <div className="mt-2 flex items-baseline">
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p
-                  className={`ml-2 text-sm font-medium ${
-                    stat.status === 'positive' ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {stat.change}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Overall Distribution */}
+      <div className="rounded-lg border border-gray-200 bg-white p-5">
+        <h2 className="mb-3 text-sm font-medium text-gray-900">Distribusi Status</h2>
+        <p className="text-xs text-gray-500 mb-4">Proporsi stunting vs normal</p>
+        <DistributionChart />
       </div>
+
+      {/* High Risk Areas */}
+      {statsData?.highRiskAreas && statsData.highRiskAreas.length > 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-3 text-sm font-medium text-gray-900 flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-gray-400" />
+            Wilayah Prioritas
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {statsData.highRiskAreas.map((area: any, index: number) => (
+              <div key={index} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-medium text-gray-900">{area.province}</h3>
+                  <span className="px-2 py-0.5 bg-red-600 text-white text-xs font-medium rounded">
+                    {area.rate}%
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600">
+                  {area.stunting} dari {area.total} anak
+                </p>
+                <p className="text-xs text-red-600 mt-1">Perlu perhatian</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Monthly Trend */}
+      {statsData?.monthlyTrend && (
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-3 text-sm font-medium text-gray-900">Tren 6 Bulan Terakhir</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-600">Bulan</th>
+                  <th className="text-right py-2 px-3 text-xs font-medium text-gray-600">Total</th>
+                  <th className="text-right py-2 px-3 text-xs font-medium text-gray-600">Stunting</th>
+                  <th className="text-right py-2 px-3 text-xs font-medium text-gray-600">Tingkat</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statsData.monthlyTrend.map((month: any, index: number) => (
+                  <tr key={index} className="border-b border-gray-100">
+                    <td className="py-2 px-3 text-xs text-gray-900">{month.month}</td>
+                    <td className="py-2 px-3 text-xs text-gray-900 text-right font-medium">{month.total}</td>
+                    <td className="py-2 px-3 text-xs text-gray-900 text-right font-medium">{month.stunting}</td>
+                    <td className="py-2 px-3 text-xs text-right">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        parseFloat(month.rate) > 30 ? 'bg-red-50 text-red-700' :
+                        parseFloat(month.rate) > 20 ? 'bg-gray-100 text-gray-700' :
+                        'bg-gray-50 text-gray-600'
+                      }`}>
+                        {month.rate}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

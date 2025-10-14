@@ -1,69 +1,226 @@
-import { FileSpreadsheet, Download, Printer } from 'lucide-react';
+'use client';
 
-const reports = [
-  {
-    name: 'Laporan Bulanan Stunting',
-    description: 'Rangkuman data stunting bulanan termasuk statistik dan tren',
-    icon: FileSpreadsheet,
-    lastGenerated: '2024-03-15',
-    color: 'blue',
-  },
-  {
-    name: 'Analisis Faktor Risiko',
-    description: 'Analisis mendalam tentang faktor-faktor risiko stunting',
-    icon: FileSpreadsheet,
-    lastGenerated: '2024-03-14',
-    color: 'purple',
-  },
-  {
-    name: 'Laporan Perkembangan Anak',
-    description: 'Detail perkembangan setiap anak yang dipantau',
-    icon: FileSpreadsheet,
-    lastGenerated: '2024-03-13',
-    color: 'green',
-  },
-];
+import { FileSpreadsheet, Download, Printer, TrendingUp, MapPin, Users, Calendar, FileText } from 'lucide-react';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+
+async function getReportsData() {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/stats?period=30`, {
+      cache: 'no-store'
+    });
+    
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    console.error('Error:', error);
+    return null;
+  }
+}
 
 export default function ReportsPage() {
+  const [statsData, setStatsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const currentDate = new Date();
+
+  useEffect(() => {
+    async function fetchData() {
+      const data = await getReportsData();
+      setStatsData(data);
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
+
+  const handleDownloadReport = (reportType: string) => {
+    // Create CSV content
+    let csvContent = '';
+    
+    if (reportType === 'monthly') {
+      csvContent = `Laporan Bulanan Stunting\n`;
+      csvContent += `Periode: ${currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}\n\n`;
+      csvContent += `Total Anak,${statsData?.overview?.totalChildren?.value || 0}\n`;
+      csvContent += `Kasus Stunting,${statsData?.overview?.stuntingCases?.value || 0}\n`;
+      csvContent += `Tingkat Stunting,${statsData?.analysis?.stuntingRate || '0'}%\n`;
+    } else if (reportType === 'distribution') {
+      csvContent = `Laporan Distribusi Regional\n`;
+      csvContent += `Wilayah Risiko Tinggi: ${statsData?.highRiskAreas?.length || 0}\n\n`;
+      csvContent += `Provinsi,Stunting,Total,Rate\n`;
+      statsData?.highRiskAreas?.forEach((area: any) => {
+        csvContent += `${area.province},${area.stunting},${area.total},${area.rate}%\n`;
+      });
+    }
+    
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `laporan-${reportType}-${currentDate.toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const reports = [
+    {
+      name: 'Laporan Bulanan Stunting',
+      description: `Rangkuman data stunting periode ${currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })} dengan statistik lengkap`,
+      icon: FileSpreadsheet,
+      lastGenerated: currentDate.toISOString(),
+      color: 'blue',
+      stats: {
+        total: statsData?.overview?.totalChildren?.value || 0,
+        stunting: statsData?.overview?.stuntingCases?.value || 0,
+        rate: statsData?.analysis?.stuntingRate || '0',
+      },
+      link: '/dashboard/statistics',
+    },
+    {
+      name: 'Peta Distribusi Regional',
+      description: `Visualisasi persebaran stunting di ${statsData?.highRiskAreas?.length || 0} wilayah dengan tingkat stunting tinggi`,
+      icon: MapPin,
+      lastGenerated: currentDate.toISOString(),
+      color: 'purple',
+      stats: {
+        highRisk: statsData?.highRiskAreas?.length || 0,
+        provinces: statsData?.highRiskAreas?.map((a: any) => a.province).join(', ').substring(0, 50) || 'Belum ada data',
+      },
+      link: '/dashboard/distribution/all',
+    },
+    {
+      name: 'Data Anak Terdaftar',
+      description: 'Daftar lengkap semua anak yang terdaftar dalam sistem pemantauan',
+      icon: Users,
+      lastGenerated: currentDate.toISOString(),
+      color: 'green',
+      stats: {
+        total: statsData?.overview?.totalChildren?.value || 0,
+        today: statsData?.overview?.todayData?.value || 0,
+      },
+      link: '/dashboard/children',
+    },
+    {
+      name: 'Analisis Tren 6 Bulan',
+      description: 'Grafik dan analisis tren stunting dalam 6 bulan terakhir',
+      icon: TrendingUp,
+      lastGenerated: currentDate.toISOString(),
+      color: 'orange',
+      stats: {
+        months: statsData?.monthlyTrend?.length || 0,
+        avgRate: statsData?.monthlyTrend 
+          ? (statsData.monthlyTrend.reduce((sum: number, m: any) => sum + parseFloat(m.rate), 0) / statsData.monthlyTrend.length).toFixed(1)
+          : '0',
+      },
+      link: '/dashboard/statistics',
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-slate-200 rounded-lg w-1/3 mb-6"></div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+            <div className="h-24 bg-slate-100 rounded-xl"></div>
+            <div className="h-24 bg-slate-100 rounded-xl"></div>
+            <div className="h-24 bg-slate-100 rounded-xl"></div>
+            <div className="h-24 bg-slate-100 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Laporan</h1>
-        <div className="flex items-center space-x-4">
-          <button className="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
-                          <Printer className="mr-2 h-5 w-5 text-gray-600" />
-            Print
-          </button>
-          <button className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-            <Download className="mr-2 h-5 w-5" />
-            Export
-          </button>
+      <div className="pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Laporan & Ekspor</h1>
+            <p className="text-sm text-slate-500 mt-1">Akses dan unduh laporan pemantauan stunting</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200/60">
+            <Calendar className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium text-slate-600">{currentDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {reports.map((report) => (
+      {/* Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-slate-200/60 bg-white p-4">
+          <h3 className="text-xs font-medium text-slate-500">Total Anak</h3>
+          <p className="text-2xl font-bold text-slate-900 mt-2 tracking-tight">{statsData?.overview?.totalChildren?.value || 0}</p>
+          <p className="text-xs text-slate-400 mt-1">yang dipantau</p>
+        </div>
+        <div className="rounded-xl border border-slate-200/60 bg-white p-4">
+          <h3 className="text-xs font-medium text-slate-500">Stunting</h3>
+          <p className="text-2xl font-bold text-rose-600 mt-2 tracking-tight">{statsData?.overview?.stuntingCases?.value || 0}</p>
+          <p className="text-xs text-slate-400 mt-1">{statsData?.analysis?.stuntingRate || '0'}% dari total</p>
+        </div>
+        <div className="rounded-xl border border-slate-200/60 bg-white p-4">
+          <h3 className="text-xs font-medium text-slate-500">Area Prioritas</h3>
+          <p className="text-2xl font-bold text-amber-600 mt-2 tracking-tight">{statsData?.highRiskAreas?.length || 0}</p>
+          <p className="text-xs text-slate-400 mt-1">wilayah</p>
+        </div>
+        <div className="rounded-xl border border-slate-200/60 bg-white p-4">
+          <h3 className="text-xs font-medium text-slate-500">ASI Eksklusif</h3>
+          <p className="text-2xl font-bold text-blue-600 mt-2 tracking-tight">{statsData?.analysis?.breastFeedingRate || '0'}%</p>
+          <p className="text-xs text-slate-400 mt-1">anak mendapat ASI</p>
+        </div>
+      </div>
+
+      {/* Report Cards */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {reports.map((report, index) => (
           <div
             key={report.name}
-            className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md"
+            className="group rounded-xl border border-slate-200/60 bg-white p-5 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-200"
           >
-            <div className="flex items-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-                <report.icon className="h-6 w-6 text-gray-600" aria-hidden="true" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">{report.name}</h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  Terakhir dibuat: {new Date(report.lastGenerated).toLocaleDateString('id-ID')}
-                </p>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start gap-3 flex-1">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                  <report.icon className="h-5 w-5 text-slate-700" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-slate-900">{report.name}</h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {new Date(report.lastGenerated).toLocaleDateString('id-ID', { 
+                      day: 'numeric', 
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
               </div>
             </div>
-            <p className="mt-3 text-sm text-gray-600">{report.description}</p>
-            <div className="mt-4 flex space-x-3">
-              <button className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                Preview
-              </button>
-              <button className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200">
+            
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">{report.description}</p>
+            
+            {/* Report specific stats */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {report.stats && Object.entries(report.stats).map(([key, value]) => (
+                <div key={key} className="rounded-lg bg-slate-50 px-2.5 py-1.5 border border-slate-100">
+                  <span className="text-xs text-slate-500 capitalize">{key}: </span>
+                  <span className="text-xs font-semibold text-slate-900">{value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <Link
+                href={report.link}
+                className="flex-1 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-center"
+              >
+                Lihat Detail
+              </Link>
+              <button
+                onClick={() => handleDownloadReport(index === 0 ? 'monthly' : 'distribution')}
+                className="px-3 py-2 text-xs font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all duration-200 flex items-center gap-1.5 shadow-lg shadow-indigo-500/30"
+              >
+                <Download className="h-3.5 w-3.5" />
                 Download
               </button>
             </div>

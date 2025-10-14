@@ -9,6 +9,7 @@ interface Area {
   stunting: number;
   children: any[];
   description?: string;
+  href?: string | null;
 }
 
 interface DistributionMapProps {
@@ -27,7 +28,11 @@ export default function DistributionMap({ areas }: DistributionMapProps) {
     const initMap = async () => {
       try {
         const L = await import('leaflet');
-        await import('leaflet/dist/leaflet.css');
+        // Import CSS from CDN instead since module import isn't working
+        const leafletStyles = document.createElement('link');
+        leafletStyles.rel = 'stylesheet';
+        leafletStyles.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css';
+        document.head.appendChild(leafletStyles);
 
         // Fix Leaflet marker icons
         delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -41,9 +46,15 @@ export default function DistributionMap({ areas }: DistributionMapProps) {
         const centerLat = areas.reduce((sum, area) => sum + area.coordinates[0], 0) / areas.length;
         const centerLng = areas.reduce((sum, area) => sum + area.coordinates[1], 0) / areas.length;
 
-        // Check if container already has a map
-        if (mapRef.current && mapRef.current._leaflet_id) {
-          return;
+        // Clean up existing map instance before creating new one
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+
+        // Clear the map container's innerHTML to ensure clean state
+        if (mapRef.current) {
+          mapRef.current.innerHTML = '';
         }
 
         // Create map instance
@@ -99,14 +110,14 @@ export default function DistributionMap({ areas }: DistributionMapProps) {
                 ${stuntingRate > 30 ? '🔴 High Risk Area' : 
                   stuntingRate > 10 ? '🟡 Medium Risk Area' : '🟢 Low Risk Area'}
               </div>
+              ${area.href ? `<div style="margin-top: 8px;"><a href="${area.href}" style="display: inline-block; padding: 6px 12px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;">View Details</a></div>` : ''}
             </div>
           `;
 
           marker.bindPopup(popupContent);
         });
-
         // Add legend
-        const legend = L.control({ position: 'bottomright' });
+        const legend = new L.Control({ position: 'bottomright' });
         legend.onAdd = function() {
           const div = L.DomUtil.create('div', 'info legend');
           div.style.backgroundColor = 'white';
@@ -141,6 +152,7 @@ export default function DistributionMap({ areas }: DistributionMapProps) {
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
     };
   }, [areas]);

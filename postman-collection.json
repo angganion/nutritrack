@@ -1,0 +1,163 @@
+{
+  "info": {
+    "name": "NutriTrack API Tests",
+    "description": "Collection untuk testing API NutriTrack",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Submit Child Data",
+      "item": [
+        {
+          "name": "Test Case 1: Anak Laki-laki Normal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gender\": \"male\",\n  \"age\": 24,\n  \"birth_weight\": 3.2,\n  \"birth_length\": 50.0,\n  \"body_weight\": 12.5,\n  \"body_length\": 85.0,\n  \"breast_feeding\": true,\n  \"stunting\": false,\n  \"image_is_stunting\": false,\n  \"latitude\": -6.2088,\n  \"longitude\": 106.8456\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Test Case 2: Anak Perempuan Stunting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gender\": \"female\",\n  \"age\": 30,\n  \"birth_weight\": 2.8,\n  \"birth_length\": 48.0,\n  \"body_weight\": 10.2,\n  \"body_length\": 78.0,\n  \"breast_feeding\": false,\n  \"stunting\": true,\n  \"image_is_stunting\": true,\n  \"latitude\": -7.7956,\n  \"longitude\": 110.3695\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Test Case 3: Tanpa Koordinat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gender\": \"male\",\n  \"age\": 18,\n  \"birth_weight\": 3.5,\n  \"birth_length\": 52.0,\n  \"body_weight\": 11.8,\n  \"body_length\": 82.0,\n  \"breast_feeding\": true,\n  \"stunting\": false,\n  \"image_is_stunting\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Test Case 4: Missing Required Field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 24,\n  \"birth_weight\": 3.2,\n  \"birth_length\": 50.0,\n  \"body_weight\": 12.5,\n  \"body_length\": 85.0,\n  \"breast_feeding\": true,\n  \"stunting\": false,\n  \"image_is_stunting\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Test Case 5: Invalid Latitude",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gender\": \"male\",\n  \"age\": 24,\n  \"birth_weight\": 3.2,\n  \"birth_length\": 50.0,\n  \"body_weight\": 12.5,\n  \"body_length\": 85.0,\n  \"breast_feeding\": true,\n  \"stunting\": false,\n  \"image_is_stunting\": false,\n  \"latitude\": 200,\n  \"longitude\": 106.8456\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "submit"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alamat API",
+      "item": [
+        {
+          "name": "Get All Alamat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/alamat",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alamat"]
+            }
+          }
+        },
+        {
+          "name": "Create Alamat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": -6.2088,\n  \"longitude\": 106.8456,\n  \"state\": \"DKI Jakarta\",\n  \"city\": \"Jakarta\",\n  \"city_district\": \"Jakarta Selatan\",\n  \"village\": \"Kebayoran Baru\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alamat",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alamat"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    }
+  ]
+}

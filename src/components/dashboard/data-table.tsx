@@ -20,13 +20,19 @@ import { Child, getChildren } from '@/services/child.service';
 const columnHelper = createColumnHelper<Child>();
 
 const columns = [
-  columnHelper.accessor('id', {
-    header: 'ID',
-    cell: (info) => (
-      <Link href={`/dashboard/children/${info.getValue()}`} className="text-blue-600 hover:underline">
-        {info.getValue().slice(0, 8)}
-      </Link>
-    ),
+  columnHelper.display({
+    id: 'nik',
+    header: 'NIK',
+    cell: (info) => {
+      const child = info.row.original;
+      const displayValue = child.nik || `ID: ${child.id.slice(0, 8)}`;
+      const linkValue = child.nik || child.id;
+      return (
+        <Link href={`/dashboard/children/${linkValue}`} className="text-blue-600 hover:underline font-medium">
+          {displayValue}
+        </Link>
+      );
+    },
   }),
   columnHelper.accessor('gender', {
     header: 'Jenis Kelamin',
@@ -96,8 +102,12 @@ export function DataTable() {
   const [genderFilter, setGenderFilter] = React.useState('all');
   
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['children'],
-    queryFn: getChildren,
+    queryKey: ['children-unique'],
+    queryFn: async () => {
+      const response = await fetch('/api/children/unique');
+      if (!response.ok) throw new Error('Failed to fetch children');
+      return response.json();
+    },
   });
 
   const filteredData = React.useMemo(() => {
@@ -163,7 +173,7 @@ export function DataTable() {
             </div>
             <input
               type="text"
-              placeholder="Cari berdasarkan ID, usia, berat, tinggi..."
+              placeholder="Cari berdasarkan NIK, usia, berat, tinggi..."
               value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               className="block w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2.5 text-sm text-gray-900 placeholder-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"

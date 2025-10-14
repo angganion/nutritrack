@@ -10,18 +10,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Child {
-  id        String   @id @default(cuid())
-  name      String
-  birthDate DateTime @map("birth_date")
-  records   ChildRecord[]
-
-  @@map("children")
-}
-
-model ChildRecord {
-  id              String   @id @default(cuid())
-  childId         String   @map("child_id")
+model ChildData {
+  id              String   @id @default(cuid())  // Unique ID untuk setiap pemeriksaan
+  nik             String?  // NIK anak (optional, bisa duplicate - satu anak bisa punya banyak pemeriksaan)
   gender          String   // "male" | "female"
   age             Int      // in months
   birthWeight     Float    @map("birth_weight")
@@ -34,8 +25,25 @@ model ChildRecord {
   latitude        Float?
   longitude       Float?
   createdAt       DateTime @default(now()) @map("created_at")
+  alamatId        String?  @map("alamat_id")
+  
+  alamat          Alamat?  @relation(fields: [alamatId], references: [id])
 
-  child Child @relation(fields: [childId], references: [id])
+  @@map("children_data")
+  @@index([nik])  // Index untuk pencarian berdasarkan NIK
+}
 
-  @@map("child_records")
+model Alamat {
+  id           String   @id @default(cuid())
+  latitude     Float
+  longitude    Float
+  state        String
+  city         String
+  cityDistrict String   @map("city_district")
+  village      String
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  children     ChildData[]
+
+  @@map("alamat")
 }
