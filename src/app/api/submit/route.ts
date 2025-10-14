@@ -16,16 +16,16 @@ export async function POST(request: Request) {
       'birth_date',
       'gender',
       'age',
-      'birth_weight',
-      'birth_length',
       'body_weight',
       'body_length',
       'breast_feeding',
       'stunting',
+      'stunting_confidence',
       'image_is_stunting',
+      'image_is_stunting_confidence',
     ];
 
-    const optionalFields = ['latitude', 'longitude', 'alamat', 'nik'];
+    const optionalFields = ['latitude', 'longitude', 'alamat', 'nik', 'birth_weight', 'birth_length'];
 
     for (const field of requiredFields) {
       if (!(field in data)) {
