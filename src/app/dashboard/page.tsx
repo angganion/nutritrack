@@ -6,21 +6,42 @@ import { DataTable } from '@/components/dashboard/data-table';
 import { DashboardFilters } from '@/components/dashboard/dashboard-filters';
 import { Calendar, TrendingUp, AlertTriangle, CheckCircle, MapPin } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getDashboardStats(province?: string, city?: string) {
   try {
     const params = new URLSearchParams({ period: '30' });
     if (province) params.append('province', province);
     if (city) params.append('city', city);
     
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    // Get base URL - use relative for server components
+    const isServer = typeof window === 'undefined';
+    let baseUrl = '';
+    
+    if (isServer) {
+      // On server (build/runtime), construct full URL
+      if (process.env.NEXT_PUBLIC_APP_URL) {
+        baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+      } else if (process.env.VERCEL_URL) {
+        baseUrl = `https://${process.env.VERCEL_URL}`;
+      } else {
+        baseUrl = 'http://localhost:3000';
+      }
+    }
+    
     const response = await fetch(`${baseUrl}/api/dashboard/stats?${params.toString()}`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      next: { revalidate: 0 }
     });
     
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error('Failed to fetch dashboard stats:', response.status, response.statusText);
+      return null;
+    }
     return await response.json();
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error fetching dashboard stats:', error);
     return null;
   }
 }

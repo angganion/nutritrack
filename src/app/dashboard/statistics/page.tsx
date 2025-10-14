@@ -3,17 +3,38 @@ import { AgeDistributionChart } from '@/components/dashboard/age-distribution-ch
 import { DistributionChart } from '@/components/dashboard/distribution-chart';
 import { TrendingUp, TrendingDown, MapPin, AlertTriangle } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getStatisticsData() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    // Get base URL - use relative for server components
+    const isServer = typeof window === 'undefined';
+    let baseUrl = '';
+    
+    if (isServer) {
+      // On server (build/runtime), construct full URL
+      if (process.env.NEXT_PUBLIC_APP_URL) {
+        baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+      } else if (process.env.VERCEL_URL) {
+        baseUrl = `https://${process.env.VERCEL_URL}`;
+      } else {
+        baseUrl = 'http://localhost:3000';
+      }
+    }
+    
     const response = await fetch(`${baseUrl}/api/dashboard/stats?period=30`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      next: { revalidate: 0 }
     });
     
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error('Failed to fetch statistics:', response.status, response.statusText);
+      return null;
+    }
     return await response.json();
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error fetching statistics:', error);
     return null;
   }
 }
