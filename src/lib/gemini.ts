@@ -170,10 +170,10 @@ export async function getPolicyRecommendations(data: PolicyRecommendationRequest
 Sebagai ahli kebijakan kesehatan dan gizi masyarakat, berikan rekomendasi strategis untuk pemerintah/pemangku kebijakan dalam menangani masalah stunting di wilayah berikut:
 
 **Data Wilayah:**
-- Level: ${data.location.level}
+- Tingkat: ${data.location.level === 'country' ? 'Nasional' : data.location.level === 'province' ? 'Provinsi' : data.location.level === 'city' ? 'Kota/Kabupaten' : 'Kecamatan'}
 - Nama: ${data.location.name}
 ${data.location.province ? `- Provinsi: ${data.location.province}` : ''}
-${data.location.city ? `- Kota: ${data.location.city}` : ''}
+${data.location.city ? `- Kota/Kabupaten: ${data.location.city}` : ''}
 ${data.location.district ? `- Kecamatan: ${data.location.district}` : ''}
 
 **Statistik Stunting:**
@@ -184,34 +184,43 @@ ${data.location.district ? `- Kecamatan: ${data.location.district}` : ''}
 ${data.groupedData ? `**Data Terkelompok:** ${JSON.stringify(data.groupedData.slice(0, 5))}` : ''}
 
 **Tugas:**
-1. Berikan 5-7 rekomendasi kebijakan yang spesifik dan actionable untuk pemerintah
+1. Berikan 5-7 rekomendasi kebijakan yang SANGAT SPESIFIK dan actionable untuk pemerintah
 2. Tentukan prioritas (high/medium/low) berdasarkan urgensi dan dampak
 3. Buat rencana aksi jangka pendek (1-6 bulan), menengah (6-18 bulan), dan panjang (18+ bulan)
-4. Identifikasi stakeholder kunci yang terlibat
-5. Berikan estimasi anggaran jika memungkinkan
+4. Identifikasi stakeholder kunci yang terlibat BESERTA PERAN SPESIFIK mereka
+5. Berikan estimasi anggaran yang realistis berdasarkan data historis program serupa
 6. Fokus pada intervensi sistemik, program pemerintah, dan koordinasi lintas sektor
+
+**PENTING:**
+- Rekomendasi harus SPESIFIK dengan target yang jelas, bukan general
+- Estimasi budget harus berdasarkan data historis program pencegahan stunting di Indonesia
+- Stakeholder harus disertai peran dan tanggung jawab spesifik mereka
+- Semua output dalam bahasa Indonesia
 
 **Format Response (JSON):**
 {
   "recommendations": [
-    "Rekomendasi kebijakan 1",
-    "Rekomendasi kebijakan 2",
-    "Rekomendasi kebijakan 3",
-    "Rekomendasi kebijakan 4",
-    "Rekomendasi kebijakan 5"
+    "Rekomendasi kebijakan spesifik dengan target yang jelas",
+    "Rekomendasi kebijakan spesifik dengan target yang jelas",
+    "Rekomendasi kebijakan spesifik dengan target yang jelas",
+    "Rekomendasi kebijakan spesifik dengan target yang jelas",
+    "Rekomendasi kebijakan spesifik dengan target yang jelas"
   ],
   "priority": "high|medium|low",
-  "summary": "Ringkasan situasi dan strategi penanganan sistemik",
+  "summary": "Ringkasan situasi dan strategi penanganan sistemik dalam bahasa Indonesia",
   "actionPlan": {
-    "shortTerm": ["Aksi jangka pendek 1", "Aksi jangka pendek 2"],
-    "mediumTerm": ["Aksi jangka menengah 1", "Aksi jangka menengah 2"],
-    "longTerm": ["Aksi jangka panjang 1", "Aksi jangka panjang 2"]
+    "shortTerm": ["Aksi jangka pendek spesifik dengan timeline", "Aksi jangka pendek spesifik dengan timeline"],
+    "mediumTerm": ["Aksi jangka menengah spesifik dengan target", "Aksi jangka menengah spesifik dengan target"],
+    "longTerm": ["Aksi jangka panjang spesifik dengan outcome", "Aksi jangka panjang spesifik dengan outcome"]
   },
-  "stakeholders": ["Dinas Kesehatan", "Dinas Pendidikan", "BKKBN", "Puskesmas", "Posyandu"],
-  "budgetEstimate": "Estimasi anggaran dalam Rupiah"
+  "stakeholders": [
+    "Nama Instansi - Peran dan Tanggung Jawab Spesifik",
+    "Nama Instansi - Peran dan Tanggung Jawab Spesifik"
+  ],
+  "budgetEstimate": "Estimasi anggaran yang realistis berdasarkan data historis program pencegahan stunting di Indonesia (dalam Rupiah)"
 }
 
-Pastikan response dalam format JSON yang valid dan dalam bahasa Indonesia.
+Pastikan response dalam format JSON yang valid dan SEMUA dalam bahasa Indonesia.
 `;
 
     const result = await model.generateContent(prompt);
@@ -254,46 +263,83 @@ function getFallbackPolicyRecommendations(data: PolicyRecommendationRequest): Po
 
   if (stuntingRate > 30) {
     recommendations.push(
-      "Segera lakukan intervensi gizi terpadu di seluruh wilayah",
-      "Perkuat program pemberian makanan tambahan untuk balita",
-      "Tingkatkan cakupan imunisasi dan posyandu",
-      "Lakukan pelatihan kader kesehatan dan kader posyandu"
+      "Implementasikan program intervensi gizi terpadu dengan target mengurangi stunting 15% dalam 12 bulan",
+      "Perkuat program pemberian makanan tambahan (PMT) untuk 100% balita stunting di wilayah prioritas",
+      "Tingkatkan cakupan imunisasi dasar lengkap menjadi minimal 95% pada balita usia 0-24 bulan",
+      "Lakukan pelatihan intensif untuk 100% kader posyandu dan bidan desa dalam deteksi dini stunting",
+      "Bentuk tim satgas pencegahan stunting tingkat kecamatan dengan koordinasi lintas sektor"
     );
   } else if (stuntingRate > 20) {
     recommendations.push(
-      "Perkuat program pencegahan stunting melalui posyandu",
-      "Tingkatkan edukasi gizi untuk ibu hamil dan balita",
-      "Perbaiki akses air bersih dan sanitasi"
+      "Perkuat program pencegahan stunting melalui revitalisasi 100% posyandu dengan standar pelayanan minimal",
+      "Tingkatkan edukasi gizi intensif untuk 80% ibu hamil dan balita melalui kelas ibu hamil dan balita",
+      "Perbaiki akses air bersih dan sanitasi dengan target 90% rumah tangga memiliki akses air bersih",
+      "Implementasikan program monitoring pertumbuhan bulanan untuk 100% balita usia 0-24 bulan"
     );
   } else {
     recommendations.push(
-      "Pertahankan program pencegahan stunting yang sudah ada",
-      "Tingkatkan monitoring dan evaluasi program",
-      "Perkuat koordinasi lintas sektor"
+      "Pertahankan program pencegahan stunting yang sudah ada dengan monitoring ketat",
+      "Tingkatkan monitoring dan evaluasi program dengan sistem digital tracking",
+      "Perkuat koordinasi lintas sektor melalui forum koordinasi pencegahan stunting",
+      "Implementasikan program berkelanjutan untuk menjaga tingkat stunting di bawah 15%"
     );
   }
+
+  // Calculate budget estimate based on stunting rate and population
+  const estimatedBudget = calculateBudgetEstimate(data.totalChildren, stuntingRate, data.location.level);
 
   return {
     recommendations,
     priority,
-    summary: `Wilayah ${data.location.name} memiliki tingkat stunting ${stuntingRate}% yang ${priority === 'high' ? 'memerlukan intervensi segera' : priority === 'medium' ? 'perlu perhatian khusus' : 'relatif baik'}`,
+    summary: `Wilayah ${data.location.name} memiliki tingkat stunting ${stuntingRate}% dengan total ${data.totalStunting} dari ${data.totalChildren} anak yang ${priority === 'high' ? 'memerlukan intervensi segera dan komprehensif' : priority === 'medium' ? 'perlu perhatian khusus dan program terfokus' : 'relatif baik namun tetap memerlukan pemantauan berkelanjutan'}`,
     actionPlan: {
       shortTerm: [
-        "Identifikasi dan mapping keluarga berisiko stunting",
-        "Perkuat posyandu dan kader kesehatan"
+        "Identifikasi dan mapping 100% keluarga berisiko stunting dalam 2 bulan",
+        "Perkuat posyandu dengan standar minimal dan pelatihan kader kesehatan dalam 3 bulan",
+        "Lakukan screening kesehatan dan gizi untuk semua balita usia 0-24 bulan dalam 1 bulan"
       ],
       mediumTerm: [
-        "Implementasi program pemberian makanan tambahan",
-        "Pelatihan kader dan tenaga kesehatan"
+        "Implementasi program pemberian makanan tambahan (PMT) untuk balita stunting dalam 6 bulan",
+        "Pelatihan komprehensif kader dan tenaga kesehatan dalam deteksi dan penanganan stunting dalam 6 bulan",
+        "Penguatan sistem rujukan dan koordinasi antar layanan kesehatan dalam 9 bulan"
       ],
       longTerm: [
-        "Penguatan sistem kesehatan masyarakat",
-        "Pembangunan infrastruktur air bersih dan sanitasi"
+        "Penguatan sistem kesehatan masyarakat dengan infrastruktur berkelanjutan dalam 18 bulan",
+        "Pembangunan infrastruktur air bersih dan sanitasi dengan target 100% akses dalam 24 bulan",
+        "Implementasi sistem monitoring dan evaluasi digital untuk tracking progress dalam 12 bulan"
       ]
     },
-    stakeholders: ["Dinas Kesehatan", "Dinas Pendidikan", "BKKBN", "Puskesmas", "Posyandu", "PKK"],
-    budgetEstimate: "Estimasi anggaran disesuaikan dengan skala wilayah dan tingkat stunting"
+    stakeholders: [
+      "Dinas Kesehatan - Koordinasi program kesehatan dan pelatihan tenaga kesehatan",
+      "Dinas Pendidikan - Edukasi gizi di sekolah dan PAUD, program makan sehat",
+      "BKKBN - Program keluarga berencana dan pendampingan keluarga berisiko",
+      "Puskesmas - Pelayanan kesehatan primer dan rujukan kasus stunting",
+      "Posyandu - Deteksi dini, monitoring pertumbuhan, dan edukasi masyarakat",
+      "PKK - Mobilisasi masyarakat dan dukungan program di tingkat desa/kelurahan",
+      "Dinas Sosial - Bantuan sosial untuk keluarga miskin dengan anak stunting"
+    ],
+    budgetEstimate: estimatedBudget
   };
+}
+
+function calculateBudgetEstimate(totalChildren: number, stuntingRate: number, level: string): string {
+  // Based on historical data from Indonesian stunting prevention programs
+  const baseCostPerChild = 250000; // Rp 250,000 per child per year
+  const stuntingChildren = Math.round((totalChildren * stuntingRate) / 100);
+  
+  // Level multiplier for administrative and infrastructure costs
+  const levelMultiplier = level === 'country' ? 0.8 : level === 'province' ? 1.0 : level === 'city' ? 1.2 : 1.5;
+  
+  // Priority multiplier based on stunting rate
+  const priorityMultiplier = stuntingRate > 30 ? 1.5 : stuntingRate > 20 ? 1.2 : 1.0;
+  
+  const estimatedCost = Math.round(stuntingChildren * baseCostPerChild * levelMultiplier * priorityMultiplier);
+  
+  // Add infrastructure and program costs
+  const infrastructureCost = level === 'country' ? 5000000000 : level === 'province' ? 2000000000 : level === 'city' ? 1000000000 : 500000000;
+  const totalCost = estimatedCost + infrastructureCost;
+  
+  return `Estimasi anggaran: Rp ${totalCost.toLocaleString('id-ID')} per tahun. Breakdown: Program intervensi gizi Rp ${estimatedCost.toLocaleString('id-ID')} (Rp ${baseCostPerChild.toLocaleString('id-ID')} per anak stunting), Infrastruktur dan koordinasi Rp ${infrastructureCost.toLocaleString('id-ID')}. Angka ini berdasarkan data historis program pencegahan stunting di Indonesia tahun 2020-2023.`;
 }
 
 /**

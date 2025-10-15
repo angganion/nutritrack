@@ -297,7 +297,7 @@ export default function DistributionDetailPage() {
             onClick={() => setShowFilters(!showFilters)}
             className="text-slate-600 hover:text-slate-900"
           >
-            {showFilters ? 'Sembunyikan' : 'Tampilkan'}
+            {showFilters ? 'Sembunyikan Filter' : 'Buka Filter'}
           </Button>
         </div>
 
@@ -405,28 +405,6 @@ export default function DistributionDetailPage() {
         )}
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        {data.level !== 'country' && (
-          <Button 
-            variant="outline" 
-            onClick={() => router.back()}
-            className="flex items-center gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Kembali
-          </Button>
-        )}
-        
-        <Button 
-          onClick={handleGetRecommendations}
-          className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-500/30"
-        >
-          <Lightbulb className="w-4 h-4" />
-          Rekomendasi Kebijakan
-        </Button>
-      </div>
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/60 rounded-xl hover:shadow-lg hover:shadow-emerald-200/50 transition-all duration-300 hover:-translate-y-0.5">
@@ -468,6 +446,28 @@ export default function DistributionDetailPage() {
         </h2>
         <DistributionMap areas={areas} />
       </Card>
+
+      {/* Action Buttons */}
+      <div className="flex gap-3">
+        {data.level !== 'country' && (
+          <Button 
+            variant="outline" 
+            onClick={() => router.back()}
+            className="flex items-center gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Kembali
+          </Button>
+        )}
+        
+        <Button 
+          onClick={handleGetRecommendations}
+          className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-500/30"
+        >
+          <Lightbulb className="w-4 h-4" />
+          Rekomendasi Kebijakan
+        </Button>
+      </div>
 
       {/* Area List */}
       {areas.length > 0 && (

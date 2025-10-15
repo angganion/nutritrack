@@ -39,12 +39,6 @@ export function TopNav() {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 border-2 border-white"></span>
             </button>
 
-            {/* Quick Actions */}
-            <div className="hidden md:flex items-center">
-              <button className="px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
-                Tambah Data
-              </button>
-            </div>
 
             {/* Profile dropdown */}
             <div className="relative ml-1">
