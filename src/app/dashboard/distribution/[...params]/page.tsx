@@ -286,8 +286,9 @@ export default function DistributionDetailPage() {
         </div>
       </div>
 
-      {/* Filter Section */}
-      <Card className="p-6 bg-white border border-slate-200/60 rounded-xl shadow-sm">
+      {/* Filter Section - Only for Admin */}
+      {user?.role === 'admin' && (
+        <Card className="p-6 bg-white border border-slate-200/60 rounded-xl shadow-sm">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-slate-50">
@@ -407,7 +408,8 @@ export default function DistributionDetailPage() {
             )}
           </div>
         )}
-      </Card>
+        </Card>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

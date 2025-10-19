@@ -196,47 +196,49 @@ export function DataTable() {
           </button>
         </div>
         
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4">
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">Filter:</span>
-          </div>
-          
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="all">Semua Status</option>
-            <option value="normal">Normal</option>
-            <option value="stunting">Stunting</option>
-          </select>
-          
-          <select
-            value={genderFilter}
-            onChange={(e) => setGenderFilter(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="all">Semua Gender</option>
-            <option value="male">Laki-laki</option>
-            <option value="female">Perempuan</option>
-          </select>
-          
-          {/* Clear Filters */}
-          {(statusFilter !== 'all' || genderFilter !== 'all' || globalFilter) && (
-            <button
-              onClick={() => {
-                setStatusFilter('all');
-                setGenderFilter('all');
-                setGlobalFilter('');
-              }}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+        {/* Filters - Only for Admin */}
+        {user?.role === 'admin' && (
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">Filter:</span>
+            </div>
+            
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              Clear Filters
-            </button>
-          )}
-        </div>
+              <option value="all">Semua Status</option>
+              <option value="normal">Normal</option>
+              <option value="stunting">Stunting</option>
+            </select>
+            
+            <select
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="all">Semua Gender</option>
+              <option value="male">Laki-laki</option>
+              <option value="female">Perempuan</option>
+            </select>
+            
+            {/* Clear Filters */}
+            {(statusFilter !== 'all' || genderFilter !== 'all' || globalFilter) && (
+              <button
+                onClick={() => {
+                  setStatusFilter('all');
+                  setGenderFilter('all');
+                  setGlobalFilter('');
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        )}
       </div>
       <div className="overflow-hidden rounded-lg border">
         <table className="min-w-full divide-y divide-gray-200">

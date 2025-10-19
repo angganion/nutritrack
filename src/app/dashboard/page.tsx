@@ -213,10 +213,12 @@ function DashboardContent({
           </div>
         </div>
 
-        {/* Filter Wilayah */}
-        <div className="mt-5">
-          <DashboardFilters />
-        </div>
+        {/* Filter Wilayah - Only for Admin */}
+        {user.role === 'admin' && (
+          <div className="mt-5">
+            <DashboardFilters />
+          </div>
+        )}
 
         {/* Status Distribution */}
         <div className="mt-5 rounded-xl border border-slate-200/60 bg-white p-6">
