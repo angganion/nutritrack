@@ -28,7 +28,7 @@ export async function GET(
     if (error) throw error;
 
     // Filter by user role and kecamatan
-    if (userRole === 'puskesmas' && userKecamatan) {
+    if (userRole === 'puskesmas' && userKecamatan && history) {
       history = history.filter((child: any) => 
         child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
       );
