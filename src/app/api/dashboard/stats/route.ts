@@ -49,11 +49,6 @@ export async function GET(request: Request) {
       );
       
       console.log('Total children after filter:', filteredChildren.length);
-      console.log('Sample filtered data:', filteredChildren.slice(0, 3).map(c => ({ 
-        id: c.id, 
-        city_district: c.alamat?.city_district,
-        city: c.alamat?.city 
-      })));
     }
     
     // Apply additional location filters if provided

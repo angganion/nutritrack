@@ -17,7 +17,7 @@ export async function loginUser(credentials: LoginCredentials): Promise<User | n
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, username, role, kecamatan')
+      .select('id, username, role, kecamatan, created_at')
       .eq('username', credentials.username)
       .eq('password', credentials.password)
       .single();
@@ -26,7 +26,13 @@ export async function loginUser(credentials: LoginCredentials): Promise<User | n
       return null;
     }
 
-    return user;
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      kecamatan: user.kecamatan,
+      created_at: user.created_at
+    };
   } catch (error) {
     console.error('Error during login:', error);
     return null;
