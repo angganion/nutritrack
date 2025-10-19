@@ -1,13 +1,14 @@
+'use client';
+
 import { StuntingPrevalenceChart } from '@/components/dashboard/stunting-prevalence-chart';
 import { AgeDistributionChart } from '@/components/dashboard/age-distribution-chart';
 import { DistributionChart } from '@/components/dashboard/distribution-chart';
 import { TrendingUp, TrendingDown, MapPin, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useUser } from '@/contexts/UserContext';
+import { useEffect, useState } from 'react';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-async function getStatisticsData() {
+async function getStatisticsData(userRole?: string, userKecamatan?: string) {
   try {
     const period = '30'; // days
     
@@ -22,7 +23,8 @@ async function getStatisticsData() {
         created_at,
         alamat:alamat_id (
           state,
-          city
+          city,
+          city_district
         )
       `)
       .order('created_at', { ascending: false });
@@ -32,6 +34,13 @@ async function getStatisticsData() {
     if (allError) throw allError;
 
     let filteredChildren = allChildren;
+
+    // Filter by user role and kecamatan
+    if (userRole === 'puskesmas' && userKecamatan) {
+      filteredChildren = filteredChildren.filter((child: any) => 
+        child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+      );
+    }
 
     // Calculate current period stats
     const currentDate = new Date();
@@ -127,13 +136,22 @@ async function getStatisticsData() {
         created_at,
         alamat:alamat_id (
           state,
-          city
+          city,
+          city_district
         )
       `)
       .not('alamat_id', 'is', null);
 
+    // Filter children with address by user role and kecamatan
+    let filteredChildrenWithAddress = childrenWithAddress || [];
+    if (userRole === 'puskesmas' && userKecamatan) {
+      filteredChildrenWithAddress = filteredChildrenWithAddress.filter((child: any) => 
+        child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+      );
+    }
+
     // Deduplicate with address
-    const dedupedWithAddress = deduplicateByNIK(childrenWithAddress || []);
+    const dedupedWithAddress = deduplicateByNIK(filteredChildrenWithAddress);
 
     // Group by province
     const provinceStats = dedupedWithAddress.reduce((acc: any, child: any) => {
@@ -206,8 +224,36 @@ async function getStatisticsData() {
   }
 }
 
-export default async function StatisticsPage() {
-  const statsData = await getStatisticsData();
+export default function StatisticsPage() {
+  const { user } = useUser();
+  const [statsData, setStatsData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      const loadStats = async () => {
+        setIsLoading(true);
+        try {
+          const data = await getStatisticsData(user.role, user.kecamatan);
+          setStatsData(data);
+        } catch (error) {
+          console.error('Error loading statistics:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadStats();
+    }
+  }, [user]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">

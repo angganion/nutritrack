@@ -180,6 +180,8 @@ export async function GET(
     const month = searchParams.get('month');
     const year = searchParams.get('year');
     const mode = searchParams.get('mode') || 'kumulatif'; // 'kumulatif' atau 'per_bulan'
+    const userRole = searchParams.get('userRole');
+    const userKecamatan = searchParams.get('userKecamatan');
     
     if (pathSegments.length === 0) {
       return NextResponse.json(
@@ -250,8 +252,16 @@ export async function GET(
         throw new Error('Failed to fetch all data');
       }
 
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
+
       // Deduplikasi berdasarkan NIK (ambil yang terbaru)
-      const deduplicatedData = deduplicateByNIK(data);
+      const deduplicatedData = deduplicateByNIK(filteredData);
 
       const totalChildren = deduplicatedData.length;
       const totalStunting = deduplicatedData.filter(child => child.stunting === true).length;
@@ -282,8 +292,16 @@ export async function GET(
         throw new Error('Failed to fetch province data');
       }
 
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
+
       // Deduplikasi berdasarkan NIK (ambil yang terbaru)
-      const deduplicatedData = deduplicateByNIK(data);
+      const deduplicatedData = deduplicateByNIK(filteredData);
 
       // Hitung total secara lokal dari data yang diambil
       const totalChildren = deduplicatedData.length;
@@ -320,8 +338,16 @@ export async function GET(
         throw new Error('Failed to fetch city data');
       }
 
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
+
       // Deduplikasi berdasarkan NIK (ambil yang terbaru)
-      const deduplicatedData = deduplicateByNIK(data);
+      const deduplicatedData = deduplicateByNIK(filteredData);
 
       const totalChildren = deduplicatedData.length;
       const totalStunting = deduplicatedData.filter(child => child.stunting === true).length;
@@ -359,8 +385,16 @@ export async function GET(
         throw new Error('Failed to fetch district data');
       }
 
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
+
       // Deduplikasi berdasarkan NIK (ambil yang terbaru)
-      const deduplicatedData = deduplicateByNIK(data);
+      const deduplicatedData = deduplicateByNIK(filteredData);
 
       const totalChildren = deduplicatedData.length;
       const totalStunting = deduplicatedData.filter(child => child.stunting === true).length;

@@ -226,6 +226,7 @@ Pastikan response dalam format JSON yang valid dan SEMUA dalam bahasa Indonesia.
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
+  
 
     // Parse JSON response
     const jsonMatch = text.match(/\{[\s\S]*\}/);

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useUser } from '@/contexts/UserContext';
 
 // Import map component dynamically
 const DistributionMap = dynamic(() => import('@/components/distribution-map'), { 
@@ -45,6 +46,7 @@ export default function DistributionDetailPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useUser();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +69,8 @@ export default function DistributionDetailPage() {
         if (selectedYear) queryParams.append('year', selectedYear);
         if (selectedMonth) queryParams.append('month', selectedMonth);
         if (filterMode) queryParams.append('mode', filterMode);
+        if (user?.role) queryParams.append('userRole', user.role);
+        if (user?.kecamatan) queryParams.append('userKecamatan', user.kecamatan);
         
         const queryString = queryParams.toString();
         const url = `/api/stats/${apiPath}${queryString ? `?${queryString}` : ''}`;

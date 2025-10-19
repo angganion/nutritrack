@@ -1,13 +1,26 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const userRole = searchParams.get('userRole');
+    const userKecamatan = searchParams.get('userKecamatan');
+
     // Get all children data with age
-    const { data: allChildren, error } = await supabase
+    let query = supabase
       .from('children_data')
-      .select('id, nik, age, stunting, created_at')
+      .select(`
+        id, nik, age, stunting, created_at,
+        alamat:alamat_id (
+          state,
+          city,
+          city_district
+        )
+      `)
       .order('created_at', { ascending: false });
+
+    const { data: allChildren, error } = await query;
 
     if (error) throw error;
 
@@ -30,7 +43,16 @@ export async function GET() {
       return [...Array.from(nikMap.values()), ...noNikData];
     };
 
-    const deduped = deduplicateByNIK(allChildren);
+    // Filter by user role and kecamatan first
+    let filteredChildren = allChildren || [];
+    
+    if (userRole === 'puskesmas' && userKecamatan) {
+      filteredChildren = filteredChildren.filter((child: any) => 
+        child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+      );
+    }
+
+    const deduped = deduplicateByNIK(filteredChildren);
 
     // Define age groups (in months)
     const ageGroups = [

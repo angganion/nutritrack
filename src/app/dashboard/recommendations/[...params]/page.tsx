@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useUser } from '@/contexts/UserContext';
 
 interface StatsData {
   level: 'country' | 'province' | 'city' | 'district';
@@ -49,6 +50,7 @@ interface RecommendationResponse {
 export default function RecommendationsPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useUser();
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,8 +67,14 @@ export default function RecommendationsPage() {
         setLoading(true);
         setLoadingStep('Fetching region data...');
         
+        // Build query parameters
+        const queryParams = new URLSearchParams();
+        if (user?.role) queryParams.append('userRole', user.role);
+        if (user?.kecamatan) queryParams.append('userKecamatan', user.kecamatan);
+        const queryString = queryParams.toString();
+
         // Fetch stats data first
-        const statsResponse = await fetch(`/api/stats/${apiPath}`);
+        const statsResponse = await fetch(`/api/stats/${apiPath}${queryString ? `?${queryString}` : ''}`);
         if (!statsResponse.ok) {
           throw new Error('Failed to fetch stats data');
         }
@@ -76,7 +84,7 @@ export default function RecommendationsPage() {
         setLoadingStep('Generating AI recommendations...');
         
         // Fetch recommendations using the integrated endpoint
-        const recommendationsResponse = await fetch(`/api/stats-with-recommendations/${apiPath}`);
+        const recommendationsResponse = await fetch(`/api/stats-with-recommendations/${apiPath}${queryString ? `?${queryString}` : ''}`);
         if (!recommendationsResponse.ok) {
           throw new Error('Failed to fetch recommendations');
         }

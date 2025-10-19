@@ -12,15 +12,22 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+import { useUser } from '@/contexts/UserContext';
 
 export function StuntingPrevalenceChart() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('/api/dashboard/stats?period=180');
+        const params = new URLSearchParams();
+        params.append('period', '180');
+        if (user?.role) params.append('userRole', user.role);
+        if (user?.kecamatan) params.append('userKecamatan', user.kecamatan);
+        
+        const response = await fetch(`/api/dashboard/stats?${params.toString()}`);
         const result = await response.json();
         
         if (result.monthlyTrend) {
@@ -39,8 +46,10 @@ export function StuntingPrevalenceChart() {
       }
     }
 
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   if (loading) {
     return (

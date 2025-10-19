@@ -120,17 +120,35 @@ export async function getChildGrowthTrend() {
   return data;
 }
 
-export async function getStuntingDistribution() {
-  const { data: children, error } = await supabase
+export async function getStuntingDistribution(userRole?: string, userKecamatan?: string) {
+  let query = supabase
     .from('children_data')
-    .select('stunting');
+    .select(`
+      stunting,
+      alamat:alamat_id (
+        state,
+        city,
+        city_district
+      )
+    `);
+
+  const { data: children, error } = await query;
 
   if (error) {
     throw new Error('Failed to fetch stunting distribution');
   }
 
-  const total = children.length;
-  const stuntingCases = children.filter(child => child.stunting).length;
+  // Filter by user role and kecamatan
+  let filteredChildren = children || [];
+  
+  if (userRole === 'puskesmas' && userKecamatan) {
+    filteredChildren = filteredChildren.filter((child: any) => 
+      child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+    );
+  }
+
+  const total = filteredChildren.length;
+  const stuntingCases = filteredChildren.filter(child => child.stunting).length;
   const nonStuntingCases = total - stuntingCases;
 
   return [

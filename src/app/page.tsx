@@ -19,7 +19,7 @@ export default function Home() {
               <a href="#contact" className="text-gray-600 hover:text-gray-900 transition-colors">Kontak</a>
             </div>
             <Link
-              href="/dashboard"
+              href="/login"
               className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
             >
               Masuk ke Dashboard
@@ -51,7 +51,7 @@ export default function Home() {
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/dashboard"
+                  href="/login"
                   className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200 hover:scale-105"
                 >
                   Mulai Sekarang
@@ -208,7 +208,7 @@ export default function Home() {
               untuk pemantauan tumbuh kembang anak yang lebih baik.
             </p>
             <Link
-              href="/dashboard"
+              href="/login"
               className="inline-flex items-center justify-center rounded-lg bg-white px-8 py-4 text-lg font-semibold text-blue-600 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all duration-200 hover:scale-105"
             >
               Mulai Sekarang

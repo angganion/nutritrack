@@ -4,16 +4,22 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, TrendingUp, Activity, Calendar, Sparkles, User, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@/contexts/UserContext';
 
 export default function ChildDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useUser();
 
   // Fetch history by NIK
   const { data: historyData, isLoading } = useQuery({
-    queryKey: ['child-history', id],
+    queryKey: ['child-history', id, user?.role, user?.kecamatan],
     queryFn: async () => {
-      const response = await fetch(`/api/children/history/${id}`);
+      const params = new URLSearchParams();
+      if (user?.role) params.append('userRole', user.role);
+      if (user?.kecamatan) params.append('userKecamatan', user.kecamatan);
+      
+      const response = await fetch(`/api/children/history/${id}?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch child history');
       return response.json();
     },

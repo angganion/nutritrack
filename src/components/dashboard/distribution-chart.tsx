@@ -13,6 +13,7 @@ import {
 const COLORS = ['#22c55e', '#ef4444']; // Hijau untuk Tidak Stunting, Merah untuk Stunting
 
 import { getStuntingDistribution } from '@/services/child.service';
+import { useUser } from '@/contexts/UserContext';
 
 type DistributionData = {
   name: string;
@@ -22,11 +23,12 @@ type DistributionData = {
 export function DistributionChart() {
   const [data, setData] = useState<DistributionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const distributionData = await getStuntingDistribution();
+        const distributionData = await getStuntingDistribution(user?.role, user?.kecamatan);
         setData(distributionData);
       } catch (error) {
         console.error('Failed to fetch distribution data:', error);
@@ -35,8 +37,10 @@ export function DistributionChart() {
       }
     }
 
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   if (loading) {
     return (

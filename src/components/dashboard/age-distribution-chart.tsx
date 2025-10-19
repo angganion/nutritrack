@@ -12,15 +12,21 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { useUser } from '@/contexts/UserContext';
 
 export function AgeDistributionChart() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('/api/dashboard/age-analysis');
+        const params = new URLSearchParams();
+        if (user?.role) params.append('userRole', user.role);
+        if (user?.kecamatan) params.append('userKecamatan', user.kecamatan);
+        
+        const response = await fetch(`/api/dashboard/age-analysis?${params.toString()}`);
         const result = await response.json();
         
         if (result.ageGroups) {
@@ -33,8 +39,10 @@ export function AgeDistributionChart() {
       }
     }
 
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   if (loading) {
     return (

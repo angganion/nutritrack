@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 
 import { Child, getChildren } from '@/services/child.service';
+import { useUser } from '@/contexts/UserContext';
 
 const columnHelper = createColumnHelper<Child>();
 
@@ -100,11 +101,16 @@ export function DataTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [statusFilter, setStatusFilter] = React.useState('all');
   const [genderFilter, setGenderFilter] = React.useState('all');
+  const { user } = useUser();
   
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['children-unique'],
+    queryKey: ['children-unique', user?.role, user?.kecamatan],
     queryFn: async () => {
-      const response = await fetch('/api/children/unique');
+      const params = new URLSearchParams();
+      if (user?.role) params.append('userRole', user.role);
+      if (user?.kecamatan) params.append('userKecamatan', user.kecamatan);
+      
+      const response = await fetch(`/api/children/unique?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch children');
       return response.json();
     },

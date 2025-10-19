@@ -154,6 +154,11 @@ export async function GET(
     const resolvedParams = await params;
     const pathSegments = resolvedParams.params.map(decodeAndClean);
     
+    // Get query parameters for user role and kecamatan
+    const { searchParams } = new URL(request.url);
+    const userRole = searchParams.get('userRole');
+    const userKecamatan = searchParams.get('userKecamatan');
+    
     if (pathSegments.length === 0) {
       return NextResponse.json(
         { error: 'Invalid URL format. Expected: /all, /{provinsi}, /{provinsi}/{kota}, or /{provinsi}/{kota}/{kecamatan}' },
@@ -190,9 +195,17 @@ export async function GET(
         throw new Error('Failed to fetch all data');
       }
 
-      const totalChildren = data.length;
-      const totalStunting = data.filter(child => child.stunting === true).length;
-      const groupedByProvince = groupByProvince(data);
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
+
+      const totalChildren = filteredData.length;
+      const totalStunting = filteredData.filter(child => child.stunting === true).length;
+      const groupedByProvince = groupByProvince(filteredData);
 
       statsData = {
         level: 'country',
@@ -201,7 +214,7 @@ export async function GET(
         totalStunting,
         stuntingRate: totalChildren > 0 ? ((totalStunting / totalChildren) * 100).toFixed(2) : '0.00',
         groupedByProvince,
-        data
+        data: filteredData
       };
 
     } else if (pathSegments.length === 1) {
@@ -217,12 +230,20 @@ export async function GET(
         throw new Error('Failed to fetch province data');
       }
 
-      const totalChildren = data.length;
-      const totalStunting = data.filter(child => child.stunting === true).length;
-      const groupedByCity = groupByCity(data);
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
 
-      const longitude = data.length > 0 ? (data[0] as any)?.alamat?.longitude : null;
-      const latitude = data.length > 0 ? (data[0] as any)?.alamat?.latitude : null;
+      const totalChildren = filteredData.length;
+      const totalStunting = filteredData.filter(child => child.stunting === true).length;
+      const groupedByCity = groupByCity(filteredData);
+
+      const longitude = filteredData.length > 0 ? (filteredData[0] as any)?.alamat?.longitude : null;
+      const latitude = filteredData.length > 0 ? (filteredData[0] as any)?.alamat?.latitude : null;
 
       statsData = {
         level: 'province',
@@ -233,7 +254,7 @@ export async function GET(
         longitude,
         latitude,
         groupedByCity,
-        data,
+        data: filteredData,
       };
 
     } else if (pathSegments.length === 2) {
@@ -251,12 +272,20 @@ export async function GET(
         throw new Error('Failed to fetch city data');
       }
 
-      const totalChildren = data.length;
-      const totalStunting = data.filter(child => child.stunting === true).length;
-      const groupedByDistrict = groupByDistrict(data);
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
 
-      const longitude = data.length > 0 ? (data[0] as any)?.alamat?.longitude : null;
-      const latitude = data.length > 0 ? (data[0] as any)?.alamat?.latitude : null;
+      const totalChildren = filteredData.length;
+      const totalStunting = filteredData.filter(child => child.stunting === true).length;
+      const groupedByDistrict = groupByDistrict(filteredData);
+
+      const longitude = filteredData.length > 0 ? (filteredData[0] as any)?.alamat?.longitude : null;
+      const latitude = filteredData.length > 0 ? (filteredData[0] as any)?.alamat?.latitude : null;
 
       statsData = {
         level: 'city',
@@ -267,7 +296,7 @@ export async function GET(
         longitude,
         latitude,
         groupedByDistrict,
-        data,
+        data: filteredData,
       };
 
     } else if (pathSegments.length === 3) {
@@ -287,11 +316,19 @@ export async function GET(
         throw new Error('Failed to fetch district data');
       }
 
-      const totalChildren = data.length;
-      const totalStunting = data.filter(child => child.stunting === true).length;
+      // Filter by user role and kecamatan
+      let filteredData = data;
+      if (userRole === 'puskesmas' && userKecamatan) {
+        filteredData = filteredData.filter((child: any) => 
+          child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+        );
+      }
 
-      const longitude = data.length > 0 ? (data[0] as any)?.alamat?.longitude : null;
-      const latitude = data.length > 0 ? (data[0] as any)?.alamat?.latitude : null;
+      const totalChildren = filteredData.length;
+      const totalStunting = filteredData.filter(child => child.stunting === true).length;
+
+      const longitude = filteredData.length > 0 ? (filteredData[0] as any)?.alamat?.longitude : null;
+      const latitude = filteredData.length > 0 ? (filteredData[0] as any)?.alamat?.latitude : null;
 
       statsData = {
         level: 'district',
@@ -301,7 +338,7 @@ export async function GET(
         stuntingRate: totalChildren > 0 ? ((totalStunting / totalChildren) * 100).toFixed(2) : '0.00',
         longitude,
         latitude,
-        data,
+        data: filteredData,
       };
 
     } else {

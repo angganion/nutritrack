@@ -7,6 +7,8 @@ export async function GET(request: Request) {
     const period = searchParams.get('period') || '30'; // days
     const province = searchParams.get('province');
     const city = searchParams.get('city');
+    const userRole = searchParams.get('userRole');
+    const userKecamatan = searchParams.get('userKecamatan');
 
     // Build query with location filters
     let query = supabase
@@ -19,7 +21,8 @@ export async function GET(request: Request) {
         created_at,
         alamat:alamat_id (
           state,
-          city
+          city,
+          city_district
         )
       `)
       .order('created_at', { ascending: false });
@@ -35,6 +38,25 @@ export async function GET(request: Request) {
 
     // Filter by location after fetch (because of join)
     let filteredChildren = allChildren;
+    
+    // Filter by user role and kecamatan
+    if (userRole === 'puskesmas' && userKecamatan) {
+      console.log('Filtering by kecamatan:', userKecamatan);
+      console.log('Total children before filter:', filteredChildren.length);
+      
+      filteredChildren = filteredChildren.filter((child: any) => 
+        child.alamat && child.alamat.city_district && child.alamat.city_district.toLowerCase().includes(userKecamatan.toLowerCase())
+      );
+      
+      console.log('Total children after filter:', filteredChildren.length);
+      console.log('Sample filtered data:', filteredChildren.slice(0, 3).map(c => ({ 
+        id: c.id, 
+        city_district: c.alamat?.city_district,
+        city: c.alamat?.city 
+      })));
+    }
+    
+    // Apply additional location filters if provided
     if (province) {
       filteredChildren = filteredChildren.filter((child: any) => 
         child.alamat && child.alamat.state.toLowerCase().includes(province.toLowerCase())

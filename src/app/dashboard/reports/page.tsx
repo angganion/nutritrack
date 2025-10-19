@@ -3,11 +3,17 @@
 import { FileSpreadsheet, Download, Printer, TrendingUp, MapPin, Users, Calendar, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useUser } from '@/contexts/UserContext';
 
-async function getReportsData() {
+async function getReportsData(userRole?: string, userKecamatan?: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-    const response = await fetch(`${baseUrl}/api/dashboard/stats?period=30`, {
+    const params = new URLSearchParams();
+    params.append('period', '30');
+    if (userRole) params.append('userRole', userRole);
+    if (userKecamatan) params.append('userKecamatan', userKecamatan);
+    
+    const response = await fetch(`${baseUrl}/api/dashboard/stats?${params.toString()}`, {
       cache: 'no-store'
     });
     
@@ -23,15 +29,19 @@ export default function ReportsPage() {
   const [statsData, setStatsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const currentDate = new Date();
+  const { user } = useUser();
 
   useEffect(() => {
     async function fetchData() {
-      const data = await getReportsData();
+      const data = await getReportsData(user?.role, user?.kecamatan);
       setStatsData(data);
       setLoading(false);
     }
-    fetchData();
-  }, []);
+    
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const handleDownloadReport = (reportType: string) => {
     // Create CSV content
