@@ -67,14 +67,8 @@ export default function RecommendationsPage() {
         setLoading(true);
         setLoadingStep('Fetching region data...');
         
-        // Build query parameters
-        const queryParams = new URLSearchParams();
-        if (user?.role) queryParams.append('userRole', user.role);
-        if (user?.kecamatan) queryParams.append('userKecamatan', user.kecamatan);
-        const queryString = queryParams.toString();
-
         // Fetch stats data first
-        const statsResponse = await fetch(`/api/stats/${apiPath}${queryString ? `?${queryString}` : ''}`);
+        const statsResponse = await fetch(`/api/stats/${apiPath}`);
         if (!statsResponse.ok) {
           throw new Error('Failed to fetch stats data');
         }
@@ -83,8 +77,8 @@ export default function RecommendationsPage() {
 
         setLoadingStep('Generating AI recommendations...');
         
-        // Fetch recommendations using the integrated endpoint
-        const recommendationsResponse = await fetch(`/api/stats-with-recommendations/${apiPath}${queryString ? `?${queryString}` : ''}`);
+        // Fetch recommendations using the integrated endpoint (without userRole to avoid duplication)
+        const recommendationsResponse = await fetch(`/api/stats-with-recommendations/${apiPath}`);
         if (!recommendationsResponse.ok) {
           throw new Error('Failed to fetch recommendations');
         }

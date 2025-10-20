@@ -92,7 +92,7 @@ export default function ChildDetailPage() {
           <Activity className="h-5 w-5 text-indigo-600" />
           <h2 className="text-lg font-semibold text-slate-900">Data Terbaru</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
             <p className="text-xs text-slate-500 mb-1">Usia</p>
             <p className="text-lg font-semibold text-slate-900">{latestRecord.age} bulan</p>
@@ -106,9 +106,15 @@ export default function ChildDetailPage() {
             <p className="text-lg font-semibold text-slate-900">{latestRecord.body_length} cm</p>
           </div>
           <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
-            <p className="text-xs text-slate-500 mb-1">Status</p>
+            <p className="text-xs text-slate-500 mb-1">Status AI Antropometri</p>
             <p className={`text-lg font-semibold ${latestRecord.stunting ? 'text-rose-600' : 'text-emerald-600'}`}>
               {latestRecord.stunting ? 'Stunting' : 'Normal'}
+            </p>
+          </div>
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <p className="text-xs text-slate-500 mb-1">Status AI Gambar</p>
+            <p className={`text-lg font-semibold ${latestRecord.image_is_stunting ? 'text-rose-600' : 'text-emerald-600'}`}>
+              {latestRecord.image_is_stunting ? 'Stunting' : 'Normal'}
             </p>
           </div>
         </div>
@@ -157,13 +163,22 @@ export default function ChildDetailPage() {
                       </span>
                     )}
                   </div>
-                  <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                    record.stunting 
-                      ? 'bg-rose-50 text-rose-700 border border-rose-200' 
-                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  }`}>
-                    {record.stunting ? 'Stunting' : 'Normal'}
-                  </span>
+                  <div className="flex gap-2">
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                      record.stunting 
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}>
+                      AI Antro: {record.stunting ? 'Stunting' : 'Normal'}
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                      record.image_is_stunting 
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}>
+                      AI Gambar: {record.image_is_stunting ? 'Stunting' : 'Normal'}
+                    </span>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-4 text-sm">

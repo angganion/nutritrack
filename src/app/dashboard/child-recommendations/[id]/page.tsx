@@ -80,6 +80,7 @@ export default function ChildRecommendationsPage() {
   const healthStatus = recommendations.healthStatus;
   const recs = recommendations.recommendations;
   const mealPlan = recommendations.mealPlan;
+  const localFoods = recommendations.localFoods;
   const guidance = recommendations.parentGuidance;
   const followUp = recommendations.followUp;
 
@@ -121,7 +122,8 @@ export default function ChildRecommendationsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
               <p className="text-xs text-slate-500">Berat Badan</p>
               <p className="text-base font-semibold text-slate-900">{child.bodyWeight} kg</p>
@@ -133,6 +135,18 @@ export default function ChildRecommendationsPage() {
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
               <p className="text-xs text-slate-500">ASI</p>
               <p className="text-base font-semibold text-slate-900">{child.breastFeeding ? 'Ya' : 'Tidak'}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
+              <p className="text-xs text-slate-500">AI Antropometri</p>
+              <p className={`text-base font-semibold ${child.stunting ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {child.stunting ? 'Stunting' : 'Normal'}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
+              <p className="text-xs text-slate-500">AI Gambar</p>
+              <p className={`text-base font-semibold ${child.imageIsStunting ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {child.imageIsStunting ? 'Stunting' : 'Normal'}
+              </p>
             </div>
           </div>
         </div>
@@ -162,12 +176,16 @@ export default function ChildRecommendationsPage() {
             <h3 className="text-lg font-semibold text-slate-900">Rekomendasi Nutrisi</h3>
           </div>
           <div className="space-y-2">
-            {recs.nutrition.map((item: string, index: number) => (
-              <div key={index} className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-slate-700">{item}</p>
-              </div>
-            ))}
+            {recs.nutrition && recs.nutrition.length > 0 ? (
+              recs.nutrition.map((item: string, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-slate-700">{item}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500 italic">Rekomendasi nutrisi tidak tersedia</p>
+            )}
           </div>
         </div>
 
@@ -178,12 +196,16 @@ export default function ChildRecommendationsPage() {
             <h3 className="text-lg font-semibold text-slate-900">Aktivitas & Stimulasi</h3>
           </div>
           <div className="space-y-2">
-            {recs.activities.map((item: string, index: number) => (
-              <div key={index} className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-slate-700">{item}</p>
-              </div>
-            ))}
+            {recs.activities && recs.activities.length > 0 ? (
+              recs.activities.map((item: string, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-slate-700">{item}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500 italic">Rekomendasi aktivitas tidak tersedia</p>
+            )}
           </div>
         </div>
 
@@ -194,12 +216,16 @@ export default function ChildRecommendationsPage() {
             <h3 className="text-lg font-semibold text-slate-900">Pemantauan</h3>
           </div>
           <div className="space-y-2">
-            {recs.monitoring.map((item: string, index: number) => (
-              <div key={index} className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-slate-700">{item}</p>
-              </div>
-            ))}
+            {recs.monitoring && recs.monitoring.length > 0 ? (
+              recs.monitoring.map((item: string, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-slate-700">{item}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500 italic">Rekomendasi pemantauan tidak tersedia</p>
+            )}
           </div>
         </div>
 
@@ -210,15 +236,37 @@ export default function ChildRecommendationsPage() {
             <h3 className="text-lg font-semibold text-slate-900">Tindak Lanjut Medis</h3>
           </div>
           <div className="space-y-2">
-            {recs.medical.map((item: string, index: number) => (
+            {recs.medical && recs.medical.length > 0 ? (
+              recs.medical.map((item: string, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-rose-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-slate-700">{item}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500 italic">Rekomendasi medis tidak tersedia</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Supplements */}
+      {recs.supplements && recs.supplements.length > 0 && (
+        <div className="rounded-xl border border-slate-200/60 bg-white p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="h-5 w-5 text-indigo-600" />
+            <h3 className="text-lg font-semibold text-slate-900">Rekomendasi Suplemen</h3>
+          </div>
+          <div className="space-y-2">
+            {recs.supplements.map((item: string, index: number) => (
               <div key={index} className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-rose-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-slate-700">{item}</p>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Meal Plan */}
       <div className="rounded-xl border border-slate-200/60 bg-white p-6">
@@ -271,6 +319,75 @@ export default function ChildRecommendationsPage() {
         </div>
       </div>
 
+      {/* Local Foods */}
+      {localFoods && (
+        <div className="rounded-xl border border-slate-200/60 bg-white p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Makanan Lokal Bergizi</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900 mb-2">Sumber Protein</h4>
+              <ul className="space-y-1">
+                {localFoods.proteinSources && localFoods.proteinSources.length > 0 ? (
+                  localFoods.proteinSources.map((item: string, index: number) => (
+                    <li key={index} className="text-xs text-slate-600 flex items-start gap-1">
+                      <span className="text-indigo-600">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-xs text-slate-500 italic">Tidak tersedia</li>
+                )}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900 mb-2">Sumber Zat Besi</h4>
+              <ul className="space-y-1">
+                {localFoods.ironSources && localFoods.ironSources.length > 0 ? (
+                  localFoods.ironSources.map((item: string, index: number) => (
+                    <li key={index} className="text-xs text-slate-600 flex items-start gap-1">
+                      <span className="text-indigo-600">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-xs text-slate-500 italic">Tidak tersedia</li>
+                )}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900 mb-2">Sumber Kalsium</h4>
+              <ul className="space-y-1">
+                {localFoods.calciumSources && localFoods.calciumSources.length > 0 ? (
+                  localFoods.calciumSources.map((item: string, index: number) => (
+                    <li key={index} className="text-xs text-slate-600 flex items-start gap-1">
+                      <span className="text-indigo-600">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-xs text-slate-500 italic">Tidak tersedia</li>
+                )}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900 mb-2">Sumber Vitamin</h4>
+              <ul className="space-y-1">
+                {localFoods.vitaminSources && localFoods.vitaminSources.length > 0 ? (
+                  localFoods.vitaminSources.map((item: string, index: number) => (
+                    <li key={index} className="text-xs text-slate-600 flex items-start gap-1">
+                      <span className="text-indigo-600">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-xs text-slate-500 italic">Tidak tersedia</li>
+                )}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Parent Guidance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="rounded-xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-teal-50 p-6">
@@ -319,23 +436,57 @@ export default function ChildRecommendationsPage() {
         </div>
       </div>
 
+      {/* Referral Urgency */}
+      {guidance.referralUrgency && (
+        <div className="rounded-xl border border-slate-200/60 bg-white p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="h-5 w-5 text-indigo-600" />
+            <h3 className="text-lg font-semibold text-slate-900">Tingkat Urgensi Rujukan</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              guidance.referralUrgency === 'immediate' 
+                ? 'bg-red-100 text-red-800' 
+                : guidance.referralUrgency === 'urgent'
+                ? 'bg-orange-100 text-orange-800'
+                : 'bg-green-100 text-green-800'
+            }`}>
+              {guidance.referralUrgency === 'immediate' 
+                ? 'Segera' 
+                : guidance.referralUrgency === 'urgent'
+                ? 'Mendesak'
+                : 'Rutin'
+              }
+            </span>
+            <p className="text-sm text-slate-600">
+              {guidance.referralUrgency === 'immediate' 
+                ? 'Perlu tindakan segera' 
+                : guidance.referralUrgency === 'urgent'
+                ? 'Perlu perhatian khusus'
+                : 'Dapat dilakukan sesuai jadwal'
+              }
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Follow-up */}
       <div className="rounded-xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 p-6">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Tindak Lanjut</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h4 className="text-sm font-semibold text-slate-900 mb-2">Pemeriksaan Berikutnya</h4>
             <p className="text-indigo-700 font-medium">{followUp.nextCheckup}</p>
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-slate-900 mb-2">Milestone yang Dipantau</h4>
-            <ul className="space-y-1">
-              {followUp.milestones.map((item: string, index: number) => (
-                <li key={index} className="text-xs text-slate-600">• {item}</li>
-              ))}
-            </ul>
+            <h4 className="text-sm font-semibold text-slate-900 mb-2">Tindakan Rujukan</h4>
+            <p className="text-slate-700 text-sm">{followUp.referralAction}</p>
           </div>
-          <div>
+        </div>
+        
+        {/* Resources */}
+        {followUp.resources && followUp.resources.length > 0 && (
+          <div className="mt-6">
             <h4 className="text-sm font-semibold text-slate-900 mb-2">Sumber Informasi</h4>
             <ul className="space-y-1">
               {followUp.resources.map((item: string, index: number) => (
@@ -343,7 +494,7 @@ export default function ChildRecommendationsPage() {
               ))}
             </ul>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

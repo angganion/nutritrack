@@ -49,6 +49,116 @@ export interface PolicyRecommendationResponse {
     mediumTerm: string[];
     longTerm: string[];
   };
+  regionalFoodRecommendations?: {
+    localSpecialties: Array<{
+      name: string;
+      ingredients: string[];
+      nutritionalValue: string;
+      preparation: string;
+      benefits: string[];
+      availability: string;
+    }>;
+    naturalResources: {
+      agricultural: string[];
+      marine: string[];
+      livestock: string[];
+      forestry: string[];
+    };
+    traditionalDishes: Array<{
+      name: string;
+      ingredients: string[];
+      nutritionalBenefits: string[];
+      preparation: string;
+      suitableFor: string;
+    }>;
+    nutritionalMapping: {
+      proteinSources: string[];
+      ironSources: string[];
+      calciumSources: string[];
+      vitaminSources: string[];
+    };
+    culturalIntegration: {
+      traditionalPractices: string[];
+      communityEngagement: string[];
+      localWisdom: string[];
+    };
+  };
+  stakeholders: string[];
+  budgetEstimate?: string;
+}
+
+export interface RegionalRecommendationRequest {
+  location: {
+    province: string;
+    city?: string;
+    district?: string;
+  };
+  stuntingRate?: number;
+  totalChildren?: number;
+  totalStunting?: number;
+}
+
+export interface RegionalRecommendationResponse {
+  region: {
+    name: string;
+    province: string;
+    city?: string;
+    district?: string;
+  };
+  localFoods: {
+    proteinSources: Array<{
+      name: string;
+      nutritionalValue: string;
+      availability: 'high' | 'medium' | 'low';
+      preparation: string;
+      benefits: string[];
+    }>;
+    ironSources: Array<{
+      name: string;
+      nutritionalValue: string;
+      availability: 'high' | 'medium' | 'low';
+      preparation: string;
+      benefits: string[];
+    }>;
+    calciumSources: Array<{
+      name: string;
+      nutritionalValue: string;
+      availability: 'high' | 'medium' | 'low';
+      preparation: string;
+      benefits: string[];
+    }>;
+    vitaminSources: Array<{
+      name: string;
+      nutritionalValue: string;
+      availability: 'high' | 'medium' | 'low';
+      preparation: string;
+      benefits: string[];
+    }>;
+  };
+  traditionalDishes: Array<{
+    name: string;
+    ingredients: string[];
+    nutritionalBenefits: string[];
+    preparation: string;
+    suitableFor: string;
+  }>;
+  naturalResources: {
+    agricultural: string[];
+    marine: string[];
+    livestock: string[];
+    forestry: string[];
+  };
+  recommendations: {
+    nutritionPrograms: string[];
+    foodSecurity: string[];
+    communityEngagement: string[];
+    economicDevelopment: string[];
+  };
+  implementation: {
+    shortTerm: string[];
+    mediumTerm: string[];
+    longTerm: string[];
+  };
   stakeholders: string[];
   budgetEstimate?: string;
 }
@@ -62,7 +172,7 @@ export async function getStuntingRecommendations(data: RecommendationRequest): P
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-Sebagai ahli gizi dan kesehatan anak, berikan rekomendasi tindakan yang spesifik untuk menangani kasus stunting berikut:
+Sebagai ahli gizi dan kesehatan anak, berikan rekomendasi nutrisi yang spesifik untuk menangani kasus stunting berikut:
 
 **Data Anak:**
 - Usia: ${data.age} bulan
@@ -75,24 +185,29 @@ Sebagai ahli gizi dan kesehatan anak, berikan rekomendasi tindakan yang spesifik
 - Status Stunting: ${data.stunting ? 'Ya' : 'Tidak'}
 ${data.location ? `- Lokasi: ${data.location.province || ''} ${data.location.city || ''} ${data.location.district || ''}` : ''}
 
+**PENTING - Ikuti Permenkes No. 2 Tahun 2020:**
+- Jika Z-score berat badan menurut panjang badan (W/L) < -2 SD: RUJUK KE PUSKESMAS TERDEKAT
+- Jika Z-score panjang badan menurut umur (L/A) < -2 SD: RUJUK KE PUSKESMAS TERDEKAT
+- Jika Z-score berat badan menurut umur (W/A) < -2 SD: RUJUK KE PUSKESMAS TERDEKAT
+
 **Tugas:**
-1. Berikan 5-7 rekomendasi tindakan yang spesifik dan actionable
+1. Berikan 5-7 rekomendasi nutrisi yang SPESIFIK dengan makanan lokal daerah
 2. Tentukan prioritas (high/medium/low) berdasarkan urgensi
-3. Berikan ringkasan singkat situasi dan strategi penanganan
-4. Fokus pada intervensi gizi, pola asuh, dan akses layanan kesehatan
-5. Sesuaikan rekomendasi dengan usia dan kondisi spesifik anak
+3. Fokus pada makanan kaya protein, zat besi, zinc, dan kalsium dari daerah setempat
+4. Berikan rekomendasi program penyaluran nutrisi yang tepat
+5. Jika di bawah batas Permenkes, WAJIB rekomendasikan rujukan ke puskesmas terdekat
 
 **Format Response (JSON):**
 {
   "recommendations": [
-    "Rekomendasi 1",
-    "Rekomendasi 2",
-    "Rekomendasi 3",
-    "Rekomendasi 4",
-    "Rekomendasi 5"
+    "Rekomendasi nutrisi spesifik dengan makanan lokal",
+    "Rekomendasi program penyaluran nutrisi",
+    "Rekomendasi makanan kaya protein dari daerah",
+    "Rekomendasi suplementasi jika diperlukan",
+    "Rekomendasi rujukan ke puskesmas (jika diperlukan)"
   ],
   "priority": "high|medium|low",
-  "summary": "Ringkasan singkat situasi dan strategi penanganan"
+  "summary": "Ringkasan situasi nutrisi dan strategi perbaikan gizi"
 }
 
 Pastikan response dalam format JSON yang valid dan dalam bahasa Indonesia.
@@ -126,36 +241,98 @@ Pastikan response dalam format JSON yang valid dan dalam bahasa Indonesia.
 
 function getFallbackRecommendations(data: RecommendationRequest): RecommendationResponse {
   const recommendations = [];
-
-  if (data.stunting) {
+  
+  // Hitung Z-score berdasarkan Permenkes No. 2 Tahun 2020
+  const zScoreWL = calculateZScoreWL(data.bodyWeight, data.bodyLength, data.gender, data.age);
+  const zScoreLA = calculateZScoreLA(data.bodyLength, data.age, data.gender);
+  const zScoreWA = calculateZScoreWA(data.bodyWeight, data.age, data.gender);
+  
+  // Cek kriteria rujukan berdasarkan Permenkes
+  const needsReferral = zScoreWL < -2 || zScoreLA < -2 || zScoreWA < -2;
+  
+  if (needsReferral) {
     recommendations.push(
-      "Konsultasikan segera dengan dokter anak atau ahli gizi untuk penanganan stunting",
-      "Pastikan asupan protein yang cukup (daging, ikan, telur, kacang-kacangan)",
-      "Berikan makanan yang kaya zat besi dan zinc",
-      "Terapkan pola makan gizi seimbang sesuai usia"
+      "RUJUK KE PUSKESMAS TERDEKAT - Z-score di bawah -2 SD sesuai Permenkes No. 2 Tahun 2020",
+      "Berikan makanan kaya protein lokal (ikan, telur, tempe, tahu, kacang-kacangan)",
+      "Pastikan asupan zat besi dari sayuran hijau dan daging lokal",
+      "Berikan makanan kaya zinc seperti kacang-kacangan dan biji-bijian",
+      "Konsultasi dengan ahli gizi untuk program pemulihan nutrisi"
+    );
+  } else if (data.stunting) {
+    recommendations.push(
+      "Anak mengalami stunting namun Z-score masih dalam batas normal - pantau ketat",
+      "Berikan makanan kaya protein lokal (ikan, telur, tempe, tahu, kacang-kacangan)",
+      "Pastikan asupan zat besi dari sayuran hijau dan daging lokal",
+      "Berikan makanan kaya zinc seperti kacang-kacangan dan biji-bijian",
+      "Konsultasi dengan ahli gizi untuk program perbaikan nutrisi"
+    );
+  } else {
+    recommendations.push(
+      "Berikan makanan kaya protein lokal sesuai usia anak",
+      "Pastikan asupan kalsium dari susu, ikan, dan sayuran hijau",
+      "Berikan variasi buah dan sayur lokal setiap hari",
+      "Terapkan pola makan gizi seimbang dengan bahan lokal"
     );
   }
 
   if (!data.breastFeeding && data.age <= 24) {
     recommendations.push(
-      "Pertimbangkan untuk memberikan ASI eksklusif sampai usia 6 bulan",
-      "Konsultasikan dengan konselor laktasi untuk bantuan menyusui"
+      "Konsultasikan dengan konselor laktasi untuk bantuan menyusui",
+      "Jika tidak memungkinkan ASI, pilih susu formula yang sesuai usia"
     );
   }
 
   recommendations.push(
-    "Lakukan pemeriksaan pertumbuhan secara rutin setiap bulan",
-    "Pastikan imunisasi lengkap sesuai usia",
-    "Terapkan pola hidup bersih dan sehat"
+    "Pantau pertumbuhan secara rutin di posyandu/puskesmas",
+    "Pastikan imunisasi lengkap sesuai jadwal",
+    "Edukasi keluarga tentang pentingnya nutrisi untuk pertumbuhan"
   );
 
   return {
     recommendations,
-    priority: data.stunting ? 'high' : 'medium',
-    summary: data.stunting 
-      ? 'Anak mengalami stunting dan memerlukan intervensi gizi segera'
-      : 'Anak dalam kondisi normal, tetap pantau pertumbuhan secara rutin'
+    priority: needsReferral ? 'high' : data.stunting ? 'medium' : 'low',
+    summary: needsReferral 
+      ? 'Z-score di bawah -2 SD - RUJUK KE PUSKESMAS sesuai Permenkes No. 2 Tahun 2020'
+      : data.stunting 
+        ? 'Anak mengalami stunting namun Z-score normal - pantau ketat dan berikan nutrisi lokal'
+        : 'Anak dalam kondisi normal - pertahankan nutrisi seimbang dengan makanan lokal'
   };
+}
+
+// Fungsi untuk menghitung Z-score berdasarkan Permenkes No. 2 Tahun 2020
+function calculateZScoreWL(weight: number, length: number, gender: string, age: number): number {
+  // Simplified Z-score calculation - dalam implementasi nyata perlu tabel WHO
+  // Ini adalah contoh sederhana, implementasi sebenarnya perlu tabel lengkap WHO
+  const expectedWeight = getExpectedWeightForLength(length, gender);
+  return (weight - expectedWeight) / (expectedWeight * 0.1); // Simplified SD
+}
+
+function calculateZScoreLA(length: number, age: number, gender: string): number {
+  // Simplified Z-score calculation
+  const expectedLength = getExpectedLengthForAge(age, gender);
+  return (length - expectedLength) / (expectedLength * 0.1); // Simplified SD
+}
+
+function calculateZScoreWA(weight: number, age: number, gender: string): number {
+  // Simplified Z-score calculation
+  const expectedWeight = getExpectedWeightForAge(age, gender);
+  return (weight - expectedWeight) / (expectedWeight * 0.1); // Simplified SD
+}
+
+// Fungsi helper untuk menghitung nilai expected (disederhanakan)
+function getExpectedWeightForLength(length: number, gender: string): number {
+  // Simplified calculation - dalam implementasi nyata perlu tabel WHO lengkap
+  return length * 0.1 + (gender === 'male' ? 2 : 1.5);
+}
+
+function getExpectedLengthForAge(age: number, gender: string): number {
+  // Simplified calculation - dalam implementasi nyata perlu tabel WHO lengkap
+  return age * 0.5 + (gender === 'male' ? 50 : 49);
+}
+
+function getExpectedWeightForAge(age: number, gender: string): number {
+  // Simplified calculation - dalam implementasi nyata perlu tabel WHO lengkap
+  return age * 0.3 + (gender === 'male' ? 3 : 2.8);
 }
 
 export async function getPolicyRecommendations(data: PolicyRecommendationRequest): Promise<PolicyRecommendationResponse> {
@@ -167,7 +344,7 @@ export async function getPolicyRecommendations(data: PolicyRecommendationRequest
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-Sebagai ahli kebijakan kesehatan dan gizi masyarakat, berikan rekomendasi strategis untuk pemerintah/pemangku kebijakan dalam menangani masalah stunting di wilayah berikut:
+Sebagai ahli kebijakan gizi masyarakat dan ketahanan pangan, berikan rekomendasi strategis untuk pemerintah/pemangku kebijakan dalam menangani masalah stunting melalui program nutrisi dan ketahanan pangan di wilayah berikut:
 
 **Data Wilayah:**
 - Tingkat: ${data.location.level === 'country' ? 'Nasional' : data.location.level === 'province' ? 'Provinsi' : data.location.level === 'city' ? 'Kota/Kabupaten' : 'Kecamatan'}
@@ -183,41 +360,91 @@ ${data.location.district ? `- Kecamatan: ${data.location.district}` : ''}
 
 ${data.groupedData ? `**Data Terkelompok:** ${JSON.stringify(data.groupedData.slice(0, 5))}` : ''}
 
-**Tugas:**
-1. Berikan 5-7 rekomendasi kebijakan yang SANGAT SPESIFIK dan actionable untuk pemerintah
-2. Tentukan prioritas (high/medium/low) berdasarkan urgensi dan dampak
+**Tugas - FOKUS PADA NUTRISI DAN MAKANAN DAERAH:**
+1. Berikan 5-7 rekomendasi kebijakan yang SPESIFIK untuk program nutrisi dan ketahanan pangan lokal
+2. Tentukan prioritas (high/medium/low) berdasarkan urgensi dan dampak nutrisi
 3. Buat rencana aksi jangka pendek (1-6 bulan), menengah (6-18 bulan), dan panjang (18+ bulan)
-4. Identifikasi stakeholder kunci yang terlibat BESERTA PERAN SPESIFIK mereka
-5. Berikan estimasi anggaran yang realistis berdasarkan data historis program serupa
-6. Fokus pada intervensi sistemik, program pemerintah, dan koordinasi lintas sektor
+4. Identifikasi stakeholder kunci yang terlibat dalam program nutrisi dan ketahanan pangan
+5. Berikan estimasi anggaran yang realistis untuk program nutrisi dan pangan lokal
+6. Fokus pada: makanan lokal kaya nutrisi, program penyaluran pangan, edukasi gizi, dan ketahanan pangan daerah
+7. **REKOMENDASI MAKANAN KHAS DAERAH:** Berikan rekomendasi makanan khas dan sumber daya alam lokal dari daerah ${data.location.name} yang dapat dimanfaatkan untuk program nutrisi anti-stunting, termasuk:
+   - Makanan khas daerah ${data.location.name} yang kaya protein, zat besi, zinc, dan kalsium
+   - Sumber daya alam lokal (pertanian, perikanan, peternakan, kehutanan) yang tersedia di ${data.location.name}
+   - Masakan tradisional khas ${data.location.name} yang bergizi tinggi dan cocok untuk balita
+   - Cara pengolahan makanan tradisional daerah yang mempertahankan nilai gizi
+   - Potensi pengembangan ketahanan pangan berbasis kearifan lokal ${data.location.name}
 
-**PENTING:**
-- Rekomendasi harus SPESIFIK dengan target yang jelas, bukan general
-- Estimasi budget harus berdasarkan data historis program pencegahan stunting di Indonesia
-- Stakeholder harus disertai peran dan tanggung jawab spesifik mereka
-- Semua output dalam bahasa Indonesia
+**PENTING - FOKUS NUTRISI DAN MAKANAN DAERAH:**
+- Rekomendasi harus SPESIFIK tentang makanan lokal kaya protein, zat besi, zinc, kalsium
+- Program penyaluran pangan yang tepat sasaran untuk keluarga berisiko stunting
+- Pengembangan ketahanan pangan lokal dengan fokus nutrisi
+- Edukasi gizi berbasis makanan lokal yang tersedia di daerah
+- Koordinasi dengan sektor pertanian, perikanan, dan peternakan lokal
 
 **Format Response (JSON):**
 {
   "recommendations": [
-    "Rekomendasi kebijakan spesifik dengan target yang jelas",
-    "Rekomendasi kebijakan spesifik dengan target yang jelas",
-    "Rekomendasi kebijakan spesifik dengan target yang jelas",
-    "Rekomendasi kebijakan spesifik dengan target yang jelas",
-    "Rekomendasi kebijakan spesifik dengan target yang jelas"
+    "Rekomendasi program nutrisi dengan makanan lokal spesifik",
+    "Rekomendasi program penyaluran pangan kaya nutrisi",
+    "Rekomendasi pengembangan ketahanan pangan lokal",
+    "Rekomendasi edukasi gizi berbasis makanan daerah",
+    "Rekomendasi koordinasi lintas sektor untuk nutrisi"
   ],
   "priority": "high|medium|low",
-  "summary": "Ringkasan situasi dan strategi penanganan sistemik dalam bahasa Indonesia",
+  "summary": "Ringkasan situasi nutrisi dan strategi ketahanan pangan lokal dalam bahasa Indonesia",
   "actionPlan": {
-    "shortTerm": ["Aksi jangka pendek spesifik dengan timeline", "Aksi jangka pendek spesifik dengan timeline"],
-    "mediumTerm": ["Aksi jangka menengah spesifik dengan target", "Aksi jangka menengah spesifik dengan target"],
-    "longTerm": ["Aksi jangka panjang spesifik dengan outcome", "Aksi jangka panjang spesifik dengan outcome"]
+    "shortTerm": ["Aksi nutrisi jangka pendek dengan makanan lokal", "Program penyaluran pangan darurat"],
+    "mediumTerm": ["Pengembangan program nutrisi berkelanjutan", "Edukasi gizi masyarakat"],
+    "longTerm": ["Ketahanan pangan lokal berkelanjutan", "Sistem monitoring nutrisi terintegrasi"]
+  },
+  "regionalFoodRecommendations": {
+    "localSpecialties": [
+      {
+        "name": "Nama makanan khas daerah",
+        "ingredients": ["Bahan-bahan utama"],
+        "nutritionalValue": "Kandungan gizi utama (protein, zat besi, dll)",
+        "preparation": "Cara pengolahan tradisional",
+        "benefits": ["Manfaat nutrisi untuk anti-stunting"],
+        "availability": "Tingkat ketersediaan di daerah"
+      }
+    ],
+    "naturalResources": {
+      "agricultural": ["Hasil pertanian lokal yang bergizi"],
+      "marine": ["Hasil perikanan lokal"],
+      "livestock": ["Hasil peternakan lokal"],
+      "forestry": ["Hasil hutan yang bisa dimanfaatkan"]
+    },
+    "traditionalDishes": [
+      {
+        "name": "Nama masakan tradisional",
+        "ingredients": ["Bahan-bahan tradisional"],
+        "nutritionalBenefits": ["Manfaat gizi untuk balita"],
+        "preparation": "Cara memasak tradisional",
+        "suitableFor": "Cocok untuk usia berapa"
+      }
+    ],
+    "nutritionalMapping": {
+      "proteinSources": ["Sumber protein khas daerah"],
+      "ironSources": ["Sumber zat besi dari makanan daerah"],
+      "calciumSources": ["Sumber kalsium dari pangan lokal"],
+      "vitaminSources": ["Sumber vitamin dari buah/sayur daerah"]
+    },
+    "culturalIntegration": {
+      "traditionalPractices": ["Praktik pemberian makan tradisional daerah"],
+      "communityEngagement": ["Cara melibatkan masyarakat dengan makanan lokal"],
+      "localWisdom": ["Kearifan lokal tentang pangan bergizi"]
+    }
   },
   "stakeholders": [
-    "Nama Instansi - Peran dan Tanggung Jawab Spesifik",
-    "Nama Instansi - Peran dan Tanggung Jawab Spesifik"
+    "Dinas Kesehatan - Koordinasi program nutrisi dan edukasi gizi",
+    "Dinas Pertanian - Pengembangan pangan lokal kaya nutrisi",
+    "Dinas Perikanan - Program ikan lokal untuk protein",
+    "Dinas Peternakan - Program telur dan daging lokal",
+    "Badan Ketahanan Pangan - Koordinasi ketahanan pangan daerah",
+    "Puskesmas - Pelayanan nutrisi dan rujukan gizi",
+    "Posyandu - Edukasi gizi dan monitoring pertumbuhan"
   ],
-  "budgetEstimate": "Estimasi anggaran yang realistis berdasarkan data historis program pencegahan stunting di Indonesia (dalam Rupiah)"
+  "budgetEstimate": "Estimasi anggaran untuk program nutrisi dan ketahanan pangan lokal (dalam Rupiah)"
 }
 
 Pastikan response dalam format JSON yang valid dan SEMUA dalam bahasa Indonesia.
@@ -245,6 +472,27 @@ Pastikan response dalam format JSON yang valid dan SEMUA dalam bahasa Indonesia.
         mediumTerm: [],
         longTerm: []
       },
+      regionalFoodRecommendations: parsedResponse.regionalFoodRecommendations || {
+        localSpecialties: [],
+        naturalResources: {
+          agricultural: [],
+          marine: [],
+          livestock: [],
+          forestry: []
+        },
+        traditionalDishes: [],
+        nutritionalMapping: {
+          proteinSources: [],
+          ironSources: [],
+          calciumSources: [],
+          vitaminSources: []
+        },
+        culturalIntegration: {
+          traditionalPractices: [],
+          communityEngagement: [],
+          localWisdom: []
+        }
+      },
       stakeholders: parsedResponse.stakeholders || [],
       budgetEstimate: parsedResponse.budgetEstimate
     };
@@ -264,25 +512,25 @@ function getFallbackPolicyRecommendations(data: PolicyRecommendationRequest): Po
 
   if (stuntingRate > 30) {
     recommendations.push(
-      "Implementasikan program intervensi gizi terpadu dengan target mengurangi stunting 15% dalam 12 bulan",
-      "Perkuat program pemberian makanan tambahan (PMT) untuk 100% balita stunting di wilayah prioritas",
-      "Tingkatkan cakupan imunisasi dasar lengkap menjadi minimal 95% pada balita usia 0-24 bulan",
-      "Lakukan pelatihan intensif untuk 100% kader posyandu dan bidan desa dalam deteksi dini stunting",
-      "Bentuk tim satgas pencegahan stunting tingkat kecamatan dengan koordinasi lintas sektor"
+      "Implementasikan program nutrisi lokal terpadu dengan fokus pada makanan kaya protein daerah",
+      "Perkuat program penyaluran pangan lokal kaya nutrisi untuk 100% keluarga berisiko stunting",
+      "Kembangkan ketahanan pangan lokal dengan fokus pada ikan, telur, dan sayuran hijau",
+      "Lakukan edukasi gizi berbasis makanan lokal yang tersedia di daerah",
+      "Bentuk tim satgas nutrisi tingkat kecamatan dengan koordinasi Dinas Pertanian dan Perikanan"
     );
   } else if (stuntingRate > 20) {
     recommendations.push(
-      "Perkuat program pencegahan stunting melalui revitalisasi 100% posyandu dengan standar pelayanan minimal",
-      "Tingkatkan edukasi gizi intensif untuk 80% ibu hamil dan balita melalui kelas ibu hamil dan balita",
-      "Perbaiki akses air bersih dan sanitasi dengan target 90% rumah tangga memiliki akses air bersih",
-      "Implementasikan program monitoring pertumbuhan bulanan untuk 100% balita usia 0-24 bulan"
+      "Perkuat program nutrisi melalui revitalisasi posyandu dengan fokus edukasi gizi lokal",
+      "Tingkatkan program penyaluran pangan bergizi lokal untuk 80% keluarga berisiko",
+      "Kembangkan program budidaya pangan lokal kaya nutrisi di tingkat desa",
+      "Implementasikan monitoring nutrisi bulanan dengan fokus pada asupan protein lokal"
     );
   } else {
     recommendations.push(
-      "Pertahankan program pencegahan stunting yang sudah ada dengan monitoring ketat",
-      "Tingkatkan monitoring dan evaluasi program dengan sistem digital tracking",
-      "Perkuat koordinasi lintas sektor melalui forum koordinasi pencegahan stunting",
-      "Implementasikan program berkelanjutan untuk menjaga tingkat stunting di bawah 15%"
+      "Pertahankan program nutrisi lokal yang sudah ada dengan monitoring ketat",
+      "Tingkatkan diversifikasi pangan lokal kaya nutrisi di tingkat masyarakat",
+      "Perkuat koordinasi dengan sektor pertanian dan perikanan untuk ketahanan pangan",
+      "Implementasikan program berkelanjutan untuk menjaga ketahanan pangan lokal"
     );
   }
 
@@ -295,29 +543,69 @@ function getFallbackPolicyRecommendations(data: PolicyRecommendationRequest): Po
     summary: `Wilayah ${data.location.name} memiliki tingkat stunting ${stuntingRate}% dengan total ${data.totalStunting} dari ${data.totalChildren} anak yang ${priority === 'high' ? 'memerlukan intervensi segera dan komprehensif' : priority === 'medium' ? 'perlu perhatian khusus dan program terfokus' : 'relatif baik namun tetap memerlukan pemantauan berkelanjutan'}`,
     actionPlan: {
       shortTerm: [
-        "Identifikasi dan mapping 100% keluarga berisiko stunting dalam 2 bulan",
-        "Perkuat posyandu dengan standar minimal dan pelatihan kader kesehatan dalam 3 bulan",
-        "Lakukan screening kesehatan dan gizi untuk semua balita usia 0-24 bulan dalam 1 bulan"
+        "Identifikasi dan mapping 100% keluarga berisiko stunting dengan fokus nutrisi dalam 2 bulan",
+        "Perkuat posyandu dengan edukasi gizi lokal dan pelatihan kader nutrisi dalam 3 bulan",
+        "Lakukan screening nutrisi dan rujukan ke puskesmas untuk balita stunting dalam 1 bulan"
       ],
       mediumTerm: [
-        "Implementasi program pemberian makanan tambahan (PMT) untuk balita stunting dalam 6 bulan",
-        "Pelatihan komprehensif kader dan tenaga kesehatan dalam deteksi dan penanganan stunting dalam 6 bulan",
-        "Penguatan sistem rujukan dan koordinasi antar layanan kesehatan dalam 9 bulan"
+        "Implementasi program penyaluran pangan lokal kaya nutrisi untuk keluarga berisiko dalam 6 bulan",
+        "Pelatihan komprehensif kader dan tenaga kesehatan dalam edukasi gizi lokal dalam 6 bulan",
+        "Penguatan ketahanan pangan lokal dengan program budidaya pangan bergizi dalam 9 bulan"
       ],
       longTerm: [
-        "Penguatan sistem kesehatan masyarakat dengan infrastruktur berkelanjutan dalam 18 bulan",
-        "Pembangunan infrastruktur air bersih dan sanitasi dengan target 100% akses dalam 24 bulan",
-        "Implementasi sistem monitoring dan evaluasi digital untuk tracking progress dalam 12 bulan"
+        "Penguatan sistem ketahanan pangan lokal dengan infrastruktur berkelanjutan dalam 18 bulan",
+        "Pembangunan program nutrisi terintegrasi dengan sektor pertanian dan perikanan dalam 24 bulan",
+        "Implementasi sistem monitoring nutrisi digital untuk tracking asupan gizi lokal dalam 12 bulan"
       ]
     },
+    regionalFoodRecommendations: {
+      localSpecialties: [
+        {
+          name: `Makanan khas ${data.location.name}`,
+          ingredients: ["Bahan-bahan lokal daerah"],
+          nutritionalValue: "Kaya protein, zat besi, dan vitamin",
+          preparation: "Cara pengolahan tradisional",
+          benefits: ["Mencegah stunting", "Meningkatkan imunitas", "Mendukung pertumbuhan"],
+          availability: "Tersedia sepanjang tahun di daerah"
+        }
+      ],
+      naturalResources: {
+        agricultural: ["Padi", "Jagung", "Ubi-ubian", "Sayuran hijau", "Buah-buahan"],
+        marine: ["Ikan air tawar", "Ikan laut", "Udang", "Kepiting"],
+        livestock: ["Ayam kampung", "Sapi", "Kambing", "Telur"],
+        forestry: ["Buah-buahan hutan", "Sayuran liar", "Madu hutan"]
+      },
+      traditionalDishes: [
+        {
+          name: `Masakan tradisional ${data.location.name}`,
+          ingredients: ["Bahan-bahan tradisional"],
+          nutritionalBenefits: ["Kaya protein", "Sumber vitamin", "Mudah dicerna"],
+          preparation: "Cara memasak tradisional",
+          suitableFor: "Balita 6-24 bulan"
+        }
+      ],
+      nutritionalMapping: {
+        proteinSources: ["Ikan air tawar", "Telur ayam kampung", "Tempe dan tahu", "Kacang-kacangan", "Daging lokal"],
+        ironSources: ["Bayam", "Kangkung", "Daun singkong", "Daging merah", "Hati ayam"],
+        calciumSources: ["Susu sapi lokal", "Ikan teri", "Sayuran hijau", "Kacang-kacangan", "Tempe"],
+        vitaminSources: ["Buah-buahan lokal", "Sayuran berwarna", "Ubi jalar", "Pepaya", "Jeruk"]
+      },
+      culturalIntegration: {
+        traditionalPractices: ["Praktik pemberian makan tradisional", "Penggunaan rempah-rempah lokal", "Metode pengolahan pangan tradisional"],
+        communityEngagement: ["Melibatkan tokoh adat", "Menggunakan kearifan lokal", "Program berbasis komunitas"],
+        localWisdom: ["Pengetahuan tradisional tentang pangan", "Praktik budidaya lokal", "Sistem distribusi pangan tradisional"]
+      }
+    },
     stakeholders: [
-      "Dinas Kesehatan - Koordinasi program kesehatan dan pelatihan tenaga kesehatan",
-      "Dinas Pendidikan - Edukasi gizi di sekolah dan PAUD, program makan sehat",
-      "BKKBN - Program keluarga berencana dan pendampingan keluarga berisiko",
-      "Puskesmas - Pelayanan kesehatan primer dan rujukan kasus stunting",
-      "Posyandu - Deteksi dini, monitoring pertumbuhan, dan edukasi masyarakat",
-      "PKK - Mobilisasi masyarakat dan dukungan program di tingkat desa/kelurahan",
-      "Dinas Sosial - Bantuan sosial untuk keluarga miskin dengan anak stunting"
+      "Dinas Kesehatan - Koordinasi program nutrisi dan edukasi gizi masyarakat",
+      "Dinas Pertanian - Pengembangan pangan lokal kaya nutrisi dan program budidaya",
+      "Dinas Perikanan - Program ikan lokal untuk protein dan omega-3",
+      "Dinas Peternakan - Program telur dan daging lokal untuk protein",
+      "Badan Ketahanan Pangan - Koordinasi ketahanan pangan daerah",
+      "Puskesmas - Pelayanan nutrisi dan rujukan gizi ke puskesmas",
+      "Posyandu - Edukasi gizi lokal dan monitoring pertumbuhan",
+      "PKK - Mobilisasi masyarakat untuk program nutrisi lokal",
+      "Dinas Sosial - Bantuan pangan bergizi untuk keluarga berisiko"
     ],
     budgetEstimate: estimatedBudget
   };
@@ -340,7 +628,7 @@ function calculateBudgetEstimate(totalChildren: number, stuntingRate: number, le
   const infrastructureCost = level === 'country' ? 5000000000 : level === 'province' ? 2000000000 : level === 'city' ? 1000000000 : 500000000;
   const totalCost = estimatedCost + infrastructureCost;
   
-  return `Estimasi anggaran: Rp ${totalCost.toLocaleString('id-ID')} per tahun. Breakdown: Program intervensi gizi Rp ${estimatedCost.toLocaleString('id-ID')} (Rp ${baseCostPerChild.toLocaleString('id-ID')} per anak stunting), Infrastruktur dan koordinasi Rp ${infrastructureCost.toLocaleString('id-ID')}. Angka ini berdasarkan data historis program pencegahan stunting di Indonesia tahun 2020-2023.`;
+  return `Estimasi anggaran: Rp ${totalCost.toLocaleString('id-ID')} per tahun. Breakdown: Program nutrisi dan penyaluran pangan lokal Rp ${estimatedCost.toLocaleString('id-ID')} (Rp ${baseCostPerChild.toLocaleString('id-ID')} per anak stunting), Program ketahanan pangan dan koordinasi Rp ${infrastructureCost.toLocaleString('id-ID')}. Angka ini berdasarkan data historis program nutrisi dan ketahanan pangan di Indonesia tahun 2020-2023.`;
 }
 
 /**
@@ -349,7 +637,7 @@ function calculateBudgetEstimate(totalChildren: number, stuntingRate: number, le
 export async function generateChildRecommendations(childData: any) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-  const prompt = `Sebagai ahli gizi dan kesehatan anak, berikan rekomendasi personal untuk anak dengan data berikut:
+  const prompt = `Sebagai ahli gizi dan kesehatan anak, berikan rekomendasi nutrisi personal untuk anak dengan data berikut:
 
 Data Anak:
 - Usia: ${childData.age} bulan
@@ -362,43 +650,58 @@ Data Anak:
 - Status Stunting (Manual): ${childData.stunting ? 'Ya' : 'Tidak'}
 - Status Stunting (AI Detection): ${childData.image_is_stunting ? 'Ya' : 'Tidak'}
 
+**PENTING - Ikuti Permenkes No. 2 Tahun 2020:**
+- Jika Z-score berat badan menurut panjang badan (W/L) < -2 SD: RUJUK KE PUSKESMAS TERDEKAT
+- Jika Z-score panjang badan menurut umur (L/A) < -2 SD: RUJUK KE PUSKESMAS TERDEKAT  
+- Jika Z-score berat badan menurut umur (W/A) < -2 SD: RUJUK KE PUSKESMAS TERDEKAT
+
 Berikan rekomendasi dalam format JSON dengan struktur berikut:
 {
   "healthStatus": {
     "stuntingRisk": "high/medium/low",
     "nutritionalStatus": "string describing nutritional status",
-    "growthAssessment": "string assessing growth pattern"
+    "growthAssessment": "string assessing growth pattern",
+    "referralNeeded": "boolean - true if needs referral to puskesmas"
   },
   "recommendations": {
-    "nutrition": ["list of specific nutrition recommendations"],
-    "activities": ["list of recommended activities/exercises"],
+    "nutrition": ["list of specific nutrition recommendations with local foods"],
+    "supplements": ["list of recommended supplements if needed"],
     "monitoring": ["list of what to monitor regularly"],
-    "medical": ["list of medical follow-ups needed"]
+    "medical": ["list of medical follow-ups needed - include referral if needed"],
+    "activities": ["list of recommended activities and stimulation for the child"]
   },
   "mealPlan": {
-    "breakfast": ["list of breakfast suggestions"],
-    "lunch": ["list of lunch suggestions"],
-    "dinner": ["list of dinner suggestions"],
-    "snacks": ["list of healthy snack options"]
+    "breakfast": ["list of breakfast suggestions with local ingredients"],
+    "lunch": ["list of lunch suggestions with local ingredients"],
+    "dinner": ["list of dinner suggestions with local ingredients"],
+    "snacks": ["list of healthy snack options with local ingredients"]
+  },
+  "localFoods": {
+    "proteinSources": ["local protein-rich foods available in the area"],
+    "ironSources": ["local iron-rich foods available in the area"],
+    "calciumSources": ["local calcium-rich foods available in the area"],
+    "vitaminSources": ["local vitamin-rich foods available in the area"]
   },
   "parentGuidance": {
-    "dosList": ["things parents should do"],
+    "dosList": ["things parents should do for nutrition"],
     "dontsList": ["things parents should avoid"],
-    "warningSigns": ["signs that require immediate medical attention"]
+    "warningSigns": ["signs that require immediate medical attention"],
+    "referralUrgency": "immediate/urgent/routine - based on Permenkes criteria"
   },
   "followUp": {
     "nextCheckup": "recommended timeframe for next checkup",
-    "milestones": ["developmental milestones to watch for"],
-    "resources": ["helpful resources for parents"]
+    "referralAction": "specific action needed if referral required",
+    "resources": ["helpful resources for parents about nutrition"]
   }
 }
 
 Berikan rekomendasi yang:
-1. Spesifik dan actionable untuk orang tua
-2. Disesuaikan dengan usia dan kondisi anak
-3. Praktis dan mudah diimplementasikan
-4. Berbasis evidence-based practice
-5. Dalam Bahasa Indonesia yang mudah dipahami`;
+1. FOKUS PADA NUTRISI dan makanan lokal yang tersedia
+2. Mengikuti Permenkes No. 2 Tahun 2020 untuk rujukan
+3. Spesifik dengan makanan kaya protein, zat besi, zinc, kalsium
+4. Praktis dan mudah diimplementasikan dengan bahan lokal
+5. Dalam Bahasa Indonesia yang mudah dipahami
+6. Untuk field "activities", berikan rekomendasi aktivitas fisik dan stimulasi yang sesuai dengan usia anak dan kondisi stunting`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -425,27 +728,53 @@ function generateFallbackChildRecommendations(childData: any) {
   const isStunting = childData.stunting || childData.image_is_stunting;
   const isYoung = childData.age < 24;
   
+  // Hitung Z-score berdasarkan Permenkes No. 2 Tahun 2020
+  const zScoreWL = calculateZScoreWL(childData.body_weight, childData.body_length, childData.gender, childData.age);
+  const zScoreLA = calculateZScoreLA(childData.body_length, childData.age, childData.gender);
+  const zScoreWA = calculateZScoreWA(childData.body_weight, childData.age, childData.gender);
+  
+  // Cek kriteria rujukan berdasarkan Permenkes
+  const needsReferral = zScoreWL < -2 || zScoreLA < -2 || zScoreWA < -2;
+  
   return {
     healthStatus: {
-      stuntingRisk: isStunting ? 'high' : 'low',
-      nutritionalStatus: isStunting 
-        ? 'Anak mengalami stunting, perlu perhatian khusus untuk perbaikan gizi'
-        : 'Status gizi anak dalam kondisi baik, pertahankan pola asuh yang sehat',
-      growthAssessment: `Anak berusia ${childData.age} bulan dengan berat ${childData.body_weight} kg dan tinggi ${childData.body_length} cm`
+      stuntingRisk: needsReferral ? 'high' : isStunting ? 'medium' : 'low',
+      nutritionalStatus: needsReferral 
+        ? 'Z-score di bawah -2 SD - RUJUK KE PUSKESMAS sesuai Permenkes No. 2 Tahun 2020'
+        : isStunting 
+          ? 'Anak mengalami stunting namun Z-score normal - perlu perhatian khusus untuk perbaikan gizi'
+          : 'Status gizi anak dalam kondisi baik, pertahankan pola asuh yang sehat',
+      growthAssessment: `Anak berusia ${childData.age} bulan dengan berat ${childData.body_weight} kg dan tinggi ${childData.body_length} cm`,
+      referralNeeded: needsReferral
     },
     recommendations: {
-      nutrition: [
-        'Berikan makanan kaya protein (telur, ikan, daging, kacang-kacangan)',
-        'Pastikan asupan kalsium cukup untuk pertumbuhan tulang',
-        'Berikan buah dan sayur beragam setiap hari',
-        'Hindari makanan tinggi gula dan rendah nutrisi',
+      nutrition: needsReferral ? [
+        'RUJUK KE PUSKESMAS TERDEKAT - Z-score di bawah -2 SD',
+        'Berikan makanan kaya protein lokal (ikan, telur, tempe, tahu, kacang-kacangan)',
+        'Pastikan asupan zat besi dari sayuran hijau dan daging lokal',
+        'Berikan makanan kaya zinc seperti kacang-kacangan dan biji-bijian',
+        'Konsultasi dengan ahli gizi untuk program pemulihan nutrisi'
+      ] : isStunting ? [
+        'Berikan makanan kaya protein lokal (ikan, telur, tempe, tahu, kacang-kacangan)',
+        'Pastikan asupan zat besi dari sayuran hijau dan daging lokal',
+        'Berikan makanan kaya zinc seperti kacang-kacangan dan biji-bijian',
+        'Konsultasi dengan ahli gizi untuk program perbaikan nutrisi',
+        childData.breast_feeding ? 'Lanjutkan pemberian ASI' : 'Konsultasikan dengan ahli laktasi jika memungkinkan'
+      ] : [
+        'Berikan makanan kaya protein lokal sesuai usia anak',
+        'Pastikan asupan kalsium dari susu, ikan, dan sayuran hijau',
+        'Berikan variasi buah dan sayur lokal setiap hari',
+        'Terapkan pola makan gizi seimbang dengan bahan lokal',
         childData.breast_feeding ? 'Lanjutkan pemberian ASI' : 'Konsultasikan dengan ahli laktasi jika memungkinkan'
       ],
-      activities: [
-        'Stimulasi motorik sesuai usia',
-        'Bermain di luar ruangan untuk paparan sinar matahari',
-        'Interaksi sosial dengan anak sebaya',
-        'Aktivitas fisik ringan yang sesuai usia'
+      supplements: needsReferral ? [
+        'Konsultasi dengan dokter untuk suplementasi zat besi dan zinc',
+        'Pertimbangkan multivitamin sesuai anjuran dokter'
+      ] : isStunting ? [
+        'Konsultasi dengan dokter untuk suplementasi jika diperlukan',
+        'Pertimbangkan multivitamin sesuai anjuran dokter'
+      ] : [
+        'Tidak diperlukan suplementasi khusus jika nutrisi seimbang'
       ],
       monitoring: [
         'Timbang berat badan setiap bulan',
@@ -453,11 +782,39 @@ function generateFallbackChildRecommendations(childData: any) {
         'Pantau milestone perkembangan',
         'Catat asupan makanan harian'
       ],
-      medical: [
+      medical: needsReferral ? [
+        'RUJUK KE PUSKESMAS TERDEKAT - Z-score di bawah -2 SD sesuai Permenkes No. 2 Tahun 2020',
+        'Konsultasi dengan dokter anak segera',
+        'Pastikan imunisasi lengkap sesuai jadwal',
+        'Rujuk ke ahli gizi untuk program pemulihan nutrisi'
+      ] : isStunting ? [
         'Kunjungi posyandu/puskesmas secara rutin',
         'Konsultasi dengan dokter anak jika ada kekhawatiran',
         'Pastikan imunisasi lengkap sesuai jadwal',
-        isStunting ? 'Rujuk ke ahli gizi untuk program pemulihan' : 'Pemeriksaan rutin setiap 3 bulan'
+        'Rujuk ke ahli gizi untuk program perbaikan nutrisi'
+      ] : [
+        'Kunjungi posyandu/puskesmas secara rutin',
+        'Konsultasi dengan dokter anak jika ada kekhawatiran',
+        'Pastikan imunisasi lengkap sesuai jadwal',
+        'Pemeriksaan rutin setiap 3 bulan'
+      ],
+      activities: needsReferral ? [
+        'Aktivitas fisik ringan sesuai kemampuan anak',
+        'Stimulasi motorik kasar dan halus',
+        'Interaksi sosial dengan keluarga',
+        'Permainan edukatif yang sesuai usia'
+      ] : isStunting ? [
+        'Aktivitas fisik ringan sesuai kemampuan anak',
+        'Stimulasi motorik kasar dan halus',
+        'Interaksi sosial dengan keluarga',
+        'Permainan edukatif yang sesuai usia',
+        'Latihan koordinasi mata-tangan'
+      ] : [
+        'Aktivitas fisik sesuai usia anak',
+        'Stimulasi motorik kasar dan halus',
+        'Interaksi sosial dengan keluarga',
+        'Permainan edukatif yang sesuai usia',
+        'Aktivitas kreatif dan eksplorasi'
       ]
     },
     mealPlan: {
@@ -488,7 +845,19 @@ function generateFallbackChildRecommendations(childData: any) {
       ]
     },
     parentGuidance: {
-      dosList: [
+      dosList: needsReferral ? [
+        'SEGERA RUJUK KE PUSKESMAS TERDEKAT - Z-score di bawah -2 SD',
+        'Berikan makanan kaya protein lokal dengan jadwal teratur',
+        'Ciptakan suasana makan yang menyenangkan',
+        'Berikan contoh pola makan sehat dengan bahan lokal',
+        'Dorong anak untuk mencoba makanan bergizi baru'
+      ] : isStunting ? [
+        'Berikan makanan kaya protein lokal dengan jadwal teratur',
+        'Ciptakan suasana makan yang menyenangkan',
+        'Berikan contoh pola makan sehat dengan bahan lokal',
+        'Dorong anak untuk mencoba makanan bergizi baru',
+        'Pantau pertumbuhan secara ketat'
+      ] : [
         'Berikan makan dengan jadwal teratur',
         'Ciptakan suasana makan yang menyenangkan',
         'Berikan contoh pola makan sehat',
@@ -502,16 +871,25 @@ function generateFallbackChildRecommendations(childData: any) {
         'Hindari minuman manis dan bersoda',
         'Jangan membandingkan anak dengan anak lain'
       ],
-      warningSigns: [
+      warningSigns: needsReferral ? [
+        'Z-score di bawah -2 SD - RUJUK KE PUSKESMAS',
         'Penurunan berat badan yang drastis',
         'Penolakan makan total lebih dari 24 jam',
         'Diare atau muntah berkepanjangan',
         'Demam tinggi yang tidak turun',
         'Lemas dan tidak aktif seperti biasanya'
-      ]
+      ] : [
+        'Penurunan berat badan yang drastis',
+        'Penolakan makan total lebih dari 24 jam',
+        'Diare atau muntah berkepanjangan',
+        'Demam tinggi yang tidak turun',
+        'Lemas dan tidak aktif seperti biasanya'
+      ],
+      referralUrgency: needsReferral ? 'immediate' : isStunting ? 'urgent' : 'routine'
     },
     followUp: {
-      nextCheckup: isStunting ? '1 bulan' : '3 bulan',
+      nextCheckup: needsReferral ? 'Segera (rujuk ke puskesmas)' : isStunting ? '1 bulan' : '3 bulan',
+      referralAction: needsReferral ? 'RUJUK KE PUSKESMAS TERDEKAT - Z-score di bawah -2 SD sesuai Permenkes No. 2 Tahun 2020' : isStunting ? 'Pantau ketat dan konsultasi dengan ahli gizi' : 'Pemeriksaan rutin',
       milestones: [
         'Kemampuan motorik kasar dan halus',
         'Perkembangan bahasa dan komunikasi',

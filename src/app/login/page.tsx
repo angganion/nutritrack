@@ -92,10 +92,6 @@ export default function LoginPage() {
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </div>
-
-          <div className="text-sm text-gray-600 text-center">
-            <p>Default Admin: username: admin, password: admin123</p>
-          </div>
         </form>
       </div>
     </div>

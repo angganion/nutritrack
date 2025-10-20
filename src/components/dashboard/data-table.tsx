@@ -65,7 +65,7 @@ const columns = [
       ),
   }),
   columnHelper.accessor('stunting', {
-    header: 'Status Manual',
+    header: 'Status AI Antropometri',
     cell: (info) =>
       info.getValue() ? (
         <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
@@ -78,7 +78,7 @@ const columns = [
       ),
   }),
   columnHelper.accessor('image_is_stunting', {
-    header: 'Status AI',
+    header: 'Status AI Gambar',
     cell: (info) =>
       info.getValue() ? (
         <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
@@ -210,8 +210,8 @@ export function DataTable() {
               className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="all">Semua Status</option>
-              <option value="normal">Normal</option>
-              <option value="stunting">Stunting</option>
+              <option value="normal">Normal (AI Antropometri)</option>
+              <option value="stunting">Stunting (AI Antropometri)</option>
             </select>
             
             <select
